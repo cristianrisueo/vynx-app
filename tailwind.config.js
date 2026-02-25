@@ -10,6 +10,16 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+  			vynx: {
+  				bg:         '#08080A',
+  				surface:    '#111114',
+  				border:     '#1E1E24',
+  				text:       '#F2F2F0',
+  				muted:      '#6B6B75',
+  				gold:       '#E8C547',
+  				'gold-dim': '#E8C54720',
+  				green:      '#4ADE80',
+  			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

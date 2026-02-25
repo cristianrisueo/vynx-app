@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VynX — Yield, automated.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #08080A;
+      --surface:   #111114;
+      --border:    #1E1E24;
+      --text:      #F2F2F0;
+      --muted:     #6B6B75;
+      --gold:      #E8C547;
+      --gold-dim:  #E8C54720;
+      --green:     #4ADE80;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── GRAIN OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0.4;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 60px;
+      background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 4px;
+      color: var(--text);
+    }
+
+    .logo span { color: var(--gold); }
+
+    .nav-right { display: flex; align-items: center; gap: 40px; }
+
+    .nav-link {
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: var(--text); }
+
+    .btn-launch {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--gold);
+      border: none;
+      padding: 12px 28px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-launch:hover { opacity: 0.85; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* vertical gold line */
+    .hero::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 10%;
+      bottom: 10%;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, var(--border) 30%, var(--border) 70%, transparent);
+    }
+
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 140px 60px 80px;
+    }
+
+    .hero-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    .hero-headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(72px, 8vw, 120px);
+      line-height: 0.9;
+      letter-spacing: 2px;
+      margin-bottom: 40px;
+    }
+
+    .hero-headline em {
+      font-style: normal;
+      color: var(--gold);
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--muted);
+      max-width: 380px;
+      margin-bottom: 56px;
+    }
+
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .btn-primary {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--gold);
+      border: none;
+      padding: 16px 40px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+
+    .btn-secondary {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--border);
+      padding: 16px 40px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-secondary:hover { color: var(--text); border-color: var(--text); }
+
+    /* ── HERO RIGHT (photo) ── */
+    .hero-right {
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-top: 100px;
+      overflow: hidden;
+    }
+
+    .photo-placeholder {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #111114 0%, #0d0d10 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Subtle geometric background element */
+    .hero-geo {
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .hero-geo::before {
+      content: '';
+      position: absolute;
+      inset: 40px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+    }
+
+    .photo-label {
+      position: absolute;
+      bottom: 60px;
+      left: 60px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── METRICS STRIP ── */
+    .metrics {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .metric {
+      padding: 48px 60px;
+      border-right: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+    .metric:last-child { border-right: none; }
+    .metric:hover { background: var(--surface); }
+
+    .metric-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .metric-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 52px;
+      letter-spacing: 1px;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .metric-value.green { color: var(--green); }
+
+    .metric-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    /* gold accent bar on hover */
+    .metric::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      height: 2px;
+      width: 0;
+      background: var(--gold);
+      transition: width 0.4s ease;
+    }
+    .metric:hover::after { width: 100%; }
+
+    /* ── VAULTS SECTION ── */
+    .vaults-section {
+      padding: 120px 60px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 64px;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 48px;
+      letter-spacing: 2px;
+    }
+
+    .section-note {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: var(--muted);
+    }
+
+    .vaults-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .vault-card {
+      background: var(--bg);
+      padding: 56px;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+    .vault-card:hover { background: var(--surface); }
+
+    .vault-tier {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .vault-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 40px;
+      letter-spacing: 2px;
+      margin-bottom: 48px;
+    }
+
+    .vault-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-bottom: 48px;
+    }
+
+    .vault-stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .vault-stat-value {
+      font-size: 28px;
+      font-weight: 500;
+    }
+
+    .vault-stat-value.apy { color: var(--green); }
+
+    /* strategy bars */
+    .strategy-breakdown { margin-bottom: 48px; }
+
+    .strategy-label {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .strategy-bar-bg {
+      height: 2px;
+      background: var(--border);
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .strategy-bar-fill {
+      height: 100%;
+      background: var(--gold);
+      opacity: 0.6;
+    }
+
+    .vault-action {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-vault {
+      flex: 1;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 14px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .btn-vault:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-vault.primary { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+
+    /* corner decoration */
+    .vault-card::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 80px; height: 80px;
+      border-bottom: 1px solid var(--border);
+      border-left: 1px solid var(--border);
+    }
+
+    /* ── HARVEST HISTORY ── */
+    .history-section {
+      padding: 0 60px 120px;
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .history-table th {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 16px 24px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .history-table td {
+      font-size: 13px;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .history-table tr:hover td { background: var(--surface); }
+
+    .tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border: 1px solid;
+    }
+
+    .tag.balanced { color: #60A5FA; border-color: #60A5FA40; background: #60A5FA10; }
+    .tag.aggressive { color: var(--gold); border-color: var(--gold-dim); background: var(--gold-dim); }
+
+    .profit { color: var(--green); font-family: 'DM Mono', monospace; font-size: 13px; }
+    .mono { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 4px;
+    }
+    .footer-logo span { color: var(--gold); }
+
+    .footer-note {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--muted);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-up { animation: fadeUp 0.8s ease forwards; }
+    .fade-up:nth-child(2) { animation-delay: 0.1s; }
+    .fade-up:nth-child(3) { animation-delay: 0.2s; }
+    .fade-up:nth-child(4) { animation-delay: 0.3s; }
+
+    @keyframes barGrow {
+      from { width: 0; }
+    }
+    .strategy-bar-fill { animation: barGrow 1.2s ease forwards; }
+
+    /* scrolling ticker */
+    .ticker {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .ticker-inner {
+      display: inline-block;
+      animation: ticker 20s linear infinite;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+    }
+
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    .ticker-sep { color: var(--gold); margin: 0 24px; }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo">VYN<span>X</span></div>
+  <div class="nav-right">
+    <a href="#" class="nav-link">Docs</a>
+    <a href="#" class="nav-link">GitHub</a>
+    <button class="btn-launch">Launch App</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow fade-up">Yield Aggregator · Ethereum Mainnet</div>
+    <h1 class="hero-headline fade-up">
+      YIELD,<br/>AUTO<em>—</em><br/>MATED.
+    </h1>
+    <p class="hero-sub fade-up">
+      Deposit once. VynX allocates across Lido, Aave, Curve and Uniswap V3 — automatically rebalancing to maximize your return.
+    </p>
+    <div class="hero-cta fade-up">
+      <button class="btn-primary">Launch App →</button>
+      <button class="btn-secondary">Read Docs</button>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="photo-placeholder">
+      <div class="hero-geo"></div>
+      <div style="text-align:center; z-index:1; position:relative;">
+        <div style="font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--muted); text-transform:uppercase; margin-bottom:16px;">Your photo here</div>
+        <div style="width:180px; height:260px; border:1px solid var(--border); margin:0 auto; display:flex; align-items:center; justify-content:center;">
+          <span style="color:var(--border); font-size:11px; font-family:'DM Mono',monospace; letter-spacing:2px;">ALZ01072.jpg</span>
+        </div>
+      </div>
+    </div>
+    <div class="photo-label">Cristian Risueño · Builder</div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <span class="ticker-inner">
+    WETH <span class="ticker-sep">·</span> Lido stETH <span class="ticker-sep">·</span> Aave v3 <span class="ticker-sep">·</span> Curve <span class="ticker-sep">·</span> Uniswap V3 <span class="ticker-sep">·</span> ERC-4626 <span class="ticker-sep">·</span> Automated Rebalancing <span class="ticker-sep">·</span> Non-Custodial <span class="ticker-sep">·</span> Keeper System <span class="ticker-sep">·</span> Harvest Automated &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    WETH <span class="ticker-sep">·</span> Lido stETH <span class="ticker-sep">·</span> Aave v3 <span class="ticker-sep">·</span> Curve <span class="ticker-sep">·</span> Uniswap V3 <span class="ticker-sep">·</span> ERC-4626 <span class="ticker-sep">·</span> Automated Rebalancing <span class="ticker-sep">·</span> Non-Custodial <span class="ticker-sep">·</span> Keeper System <span class="ticker-sep">·</span> Harvest Automated &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span>
+</div>
+
+<!-- METRICS -->
+<div class="metrics">
+  <div class="metric">
+    <div class="metric-label">Total Value Locked</div>
+    <div class="metric-value">$2.4M</div>
+    <div class="metric-sub">Across both vaults</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Balanced APY</div>
+    <div class="metric-value green">5.2%</div>
+    <div class="metric-sub">Lido + Aave + Curve</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Aggressive APY</div>
+    <div class="metric-value green">11.4%</div>
+    <div class="metric-sub">Curve + Uniswap V3</div>
+  </div>
+</div>
+
+<!-- VAULTS -->
+<section class="vaults-section">
+  <div class="section-header">
+    <h2 class="section-title">Choose Your Tier</h2>
+    <span class="section-note">Connect wallet to deposit</span>
+  </div>
+
+  <div class="vaults-grid">
+    <!-- Balanced -->
+    <div class="vault-card">
+      <div class="vault-tier">Tier 01</div>
+      <div class="vault-name">Balanced</div>
+      <div class="vault-stats">
+        <div>
+          <div class="vault-stat-label">APY</div>
+          <div class="vault-stat-value apy">5.2%</div>
+        </div>
+        <div>
+          <div class="vault-stat-label">TVL</div>
+          <div class="vault-stat-value">$1.2M</div>
+        </div>
+        <div>
+          <div class="vault-stat-label">Your Position</div>
+          <div class="vault-stat-value">—</div>
+        </div>
+        <div>
+          <div class="vault-stat-label">Share Price</div>
+          <div class="vault-stat-value">1.042</div>
+        </div>
+      </div>
+
+      <div class="strategy-breakdown">
+        <div class="strategy-label"><span>Lido (wstETH)</span><span>45%</span></div>
+        <div class="strategy-bar-bg"><div class="strategy-bar-fill" style="width:45%"></div></div>
+        <div class="strategy-label"><span>Aave wstETH</span><span>35%</span></div>
+        <div class="strategy-bar-bg"><div class="strategy-bar-fill" style="width:35%; animation-delay:0.1s"></div></div>
+        <div class="strategy-label"><span>Curve stETH</span><span>20%</span></div>
+        <div class="strategy-bar-bg"><div class="strategy-bar-fill" style="width:20%; animation-delay:0.2s"></div></div>
+      </div>
+
+      <div class="vault-action">
+        <button class="btn-vault primary">Deposit</button>
+        <button class="btn-vault">Withdraw</button>
+      </div>
+    </div>
+
+    <!-- Aggressive -->
+    <div class="vault-card">
+      <div class="vault-tier">Tier 02</div>
+      <div class="vault-name">Aggressive</div>
+      <div class="vault-stats">
+        <div>
+          <div class="vault-stat-label">APY</div>
+          <div class="vault-stat-value apy">11.4%</div>
+        </div>
+        <div>
+          <div class="vault-stat-label">TVL</div>
+          <div class="vault-stat-value">$1.2M</div>
+        </div>
+        <div>
+          <div class="vault-stat-label">Your Position</div>
+          <div class="vault-stat-value">—</div>
+        </div>
+        <div>
+          <div class="vault-stat-label">Share Price</div>
+          <div class="vault-stat-value">1.089</div>
+        </div>
+      </div>
+
+      <div class="strategy-breakdown">
+        <div class="strategy-label"><span>Curve stETH</span><span>60%</span></div>
+        <div class="strategy-bar-bg"><div class="strategy-bar-fill" style="width:60%"></div></div>
+        <div class="strategy-label"><span>Uniswap V3</span><span>40%</span></div>
+        <div class="strategy-bar-bg"><div class="strategy-bar-fill" style="width:40%; animation-delay:0.1s"></div></div>
+      </div>
+
+      <div class="vault-action">
+        <button class="btn-vault primary">Deposit</button>
+        <button class="btn-vault">Withdraw</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HARVEST HISTORY -->
+<section class="history-section">
+  <div class="section-header">
+    <h2 class="section-title">Harvest History</h2>
+    <span class="section-note">Last 5 events</span>
+  </div>
+
+  <table class="history-table">
+    <thead>
+      <tr>
+        <th>Vault</th>
+        <th>Strategy</th>
+        <th>Profit (WETH)</th>
+        <th>Keeper</th>
+        <th>Block</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tag balanced">Balanced</span></td>
+        <td>Aave wstETH</td>
+        <td class="profit">+0.842</td>
+        <td class="mono">0x4f2a…c91e</td>
+        <td class="mono">21,847,203</td>
+      </tr>
+      <tr>
+        <td><span class="tag aggressive">Aggressive</span></td>
+        <td>Curve stETH</td>
+        <td class="profit">+1.204</td>
+        <td class="mono">0x4f2a…c91e</td>
+        <td class="mono">21,844,891</td>
+      </tr>
+      <tr>
+        <td><span class="tag balanced">Balanced</span></td>
+        <td>Lido wstETH</td>
+        <td class="profit">+0.531</td>
+        <td class="mono">0x7b1c…a34d</td>
+        <td class="mono">21,841,502</td>
+      </tr>
+      <tr>
+        <td><span class="tag aggressive">Aggressive</span></td>
+        <td>Uniswap V3</td>
+        <td class="profit">+0.318</td>
+        <td class="mono">0x4f2a…c91e</td>
+        <td class="mono">21,838,774</td>
+      </tr>
+      <tr>
+        <td><span class="tag balanced">Balanced</span></td>
+        <td>Curve stETH</td>
+        <td class="profit">+0.729</td>
+        <td class="mono">0x9e3f…b82c</td>
+        <td class="mono">21,835,113</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">VYN<span>X</span></div>
+  <div class="footer-note">Built by Cristian Risueño · Non-custodial · Open Source</div>
+  <div class="footer-note">Ethereum Mainnet · 2025</div>
+</footer>
+
+</body>
+</html>
