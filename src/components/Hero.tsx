@@ -175,7 +175,7 @@ export default function Hero() {
       >
         {/* Photo */}
         <img
-          src="/src/assets/profile.jpg"
+          src="/src/assets/profile.webp"
           alt="Cristian Risueño"
           style={{
             position: "absolute",
