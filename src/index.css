@@ -100,38 +100,12 @@ body::before {
   animation: barGrow 1.2s ease forwards;
 }
 
-/* ── METRIC CARD ── */
-.metric-card {
-  position: relative;
-  overflow: hidden;
-  transition: background 0.3s;
-}
-
-.metric-card::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 2px;
-  width: 0;
-  background: var(--gold);
-  transition: width 0.4s ease;
-}
-
-.metric-card:hover::after {
-  width: 100%;
-}
-
-.metric-card:hover {
-  background: var(--surface);
-}
-
 /* ── VAULT CARD ── */
 .vault-card {
   background: var(--bg);
   position: relative;
   overflow: hidden;
-  transition: background 0.3s;
+  transition: background 0.15s ease;
 }
 
 .vault-card:hover {
