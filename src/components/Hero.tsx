@@ -1,14 +1,4 @@
-import { useConnect, useConnectors } from "wagmi";
-
 export default function Hero() {
-  const { connect } = useConnect();
-  const connectors = useConnectors();
-
-  function handleLaunch() {
-    const injected = connectors[0];
-    if (injected) connect({ connector: injected });
-  }
-
   return (
     <section
       style={{
@@ -120,36 +110,17 @@ export default function Hero() {
           style={{ display: "flex", alignItems: "center", gap: 24 }}
         >
           <button
-            onClick={handleLaunch}
             style={{
               fontFamily: "'DM Mono', monospace",
-              fontSize: 11,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              color: "var(--bg)",
-              background: "var(--gold)",
-              border: "none",
-              padding: "16px 40px",
-              cursor: "pointer",
-              transition: "opacity 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-          >
-            Launch App →
-          </button>
-          <button
-            style={{
-              fontFamily: "'DM Mono', monospace",
-              fontSize: 11,
-              letterSpacing: 2,
+              fontSize: 14,
+              letterSpacing: 3,
               textTransform: "uppercase",
               color: "var(--muted)",
-              background: "none",
+              background: "transparent",
               border: "1px solid var(--border)",
               padding: "16px 40px",
               cursor: "pointer",
-              transition: "color 0.2s, border-color 0.2s",
+              transition: "opacity 0.15s ease",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.color = "var(--text)";
@@ -160,7 +131,31 @@ export default function Hero() {
               e.currentTarget.style.borderColor = "var(--border)";
             }}
           >
-            Read Docs
+            Docs
+          </button>
+          <button
+            style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: 14,
+              letterSpacing: 3,
+              textTransform: "uppercase",
+              color: "var(--muted)",
+              background: "transparent",
+              border: "1px solid var(--border)",
+              padding: "16px 40px",
+              cursor: "pointer",
+              transition: "opacity 0.15s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "var(--text)";
+              e.currentTarget.style.borderColor = "var(--text)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "var(--muted)";
+              e.currentTarget.style.borderColor = "var(--border)";
+            }}
+          >
+            Github
           </button>
         </div>
       </div>

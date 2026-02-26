@@ -3,7 +3,6 @@ import VaultCard, { type VaultCardProps } from './VaultCard'
 // TODO: useVault hook — replace mock data with on-chain reads
 const VAULTS: VaultCardProps[] = [
   {
-    tier: 'Tier 01',
     name: 'Balanced',
     apy: '5.2%',
     tvl: '$1.2M',
@@ -15,7 +14,6 @@ const VAULTS: VaultCardProps[] = [
     ],
   },
   {
-    tier: 'Tier 02',
     name: 'Aggressive',
     apy: '11.4%',
     tvl: '$1.2M',

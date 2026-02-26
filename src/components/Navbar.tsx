@@ -48,47 +48,6 @@ export default function Navbar() {
 
       {/* Right side */}
       <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
-        <a
-          href="#"
-          style={{
-            fontFamily: "'DM Mono', monospace",
-            fontSize: 12,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            color: "var(--muted)",
-            textDecoration: "none",
-            transition: "color 0.2s",
-          }}
-          onMouseEnter={(e) =>
-            ((e.target as HTMLElement).style.color = "var(--text)")
-          }
-          onMouseLeave={(e) =>
-            ((e.target as HTMLElement).style.color = "var(--muted)")
-          }
-        >
-          Docs
-        </a>
-        <a
-          href="#"
-          style={{
-            fontFamily: "'DM Mono', monospace",
-            fontSize: 12,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            color: "var(--muted)",
-            textDecoration: "none",
-            transition: "color 0.2s",
-          }}
-          onMouseEnter={(e) =>
-            ((e.target as HTMLElement).style.color = "var(--text)")
-          }
-          onMouseLeave={(e) =>
-            ((e.target as HTMLElement).style.color = "var(--muted)")
-          }
-        >
-          GitHub
-        </a>
-
         <div style={{ position: "relative" }}>
           <button
             onClick={handleLaunch}
@@ -111,7 +70,7 @@ export default function Navbar() {
               e.currentTarget.style.opacity = "1";
             }}
           >
-            {isConnected ? shortAddress : "Launch App"}
+            {isConnected ? shortAddress : "Connect Wallet"}
           </button>
 
           {/* Disconnect dropdown */}
