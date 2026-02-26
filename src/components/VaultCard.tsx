@@ -31,14 +31,14 @@ export default function VaultCard({ name, apy, tvl, sharePrice, strategies }: Va
   return (
     <div
       className="vault-card"
-      style={{ padding: 56, display: 'flex', flexDirection: 'column', gap: 40 }}
+      style={{ padding: 56, display: 'flex', flexDirection: 'column', gap: 40, border: '1px solid var(--border)' }}
     >
       {/* Vault name */}
       <div
         style={{
           fontFamily: "'Bebas Neue', sans-serif",
           fontSize: 40,
-          letterSpacing: 2,
+          letterSpacing: 3,
           lineHeight: 1,
           color: 'var(--text)',
         }}
