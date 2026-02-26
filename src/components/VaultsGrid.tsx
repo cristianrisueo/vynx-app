@@ -5,7 +5,6 @@ const VAULTS: VaultCardProps[] = [
   {
     name: "Balanced",
     apy: "5.2%",
-    tvl: "$1.2M",
     sharePrice: "1.042",
     strategies: [
       { label: "Lido (wstETH)", pct: 45 },
@@ -16,7 +15,6 @@ const VAULTS: VaultCardProps[] = [
   {
     name: "Aggressive",
     apy: "11.4%",
-    tvl: "$1.2M",
     sharePrice: "1.089",
     strategies: [
       { label: "Curve stETH", pct: 60 },

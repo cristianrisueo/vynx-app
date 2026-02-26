@@ -9,7 +9,6 @@ export interface Strategy {
 export interface VaultCardProps {
   name: string;
   apy: string;
-  tvl: string;
   sharePrice: string;
   strategies: Strategy[];
 }
@@ -17,7 +16,6 @@ export interface VaultCardProps {
 export default function VaultCard({
   name,
   apy,
-  tvl,
   sharePrice,
   strategies,
 }: VaultCardProps) {
@@ -94,7 +92,6 @@ export default function VaultCard({
           gap: 32,
         }}
       >
-        <StatItem label="TVL" value={tvl} />
         {/* TODO: useVault hook for user position */}
         <StatItem label="Your Position" value="—" />
         <StatItem label="Share Price" value={sharePrice} />
