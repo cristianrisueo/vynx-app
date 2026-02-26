@@ -39,7 +39,7 @@ export default function Hero() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          padding: "100px 60px 60px",
+          padding: "100px 60px 60px 80px",
         }}
       >
         {/* Eyebrow */}
@@ -66,7 +66,7 @@ export default function Hero() {
               flexShrink: 0,
             }}
           />
-          Yield Aggregator · Ethereum Mainnet
+          Open source · Permissionless
         </div>
 
         {/* Headline */}
@@ -81,7 +81,7 @@ export default function Hero() {
           }}
         >
           YIELD MADE <br />
-          SIMPLER<span style={{ color: "var(--gold)" }}>.</span>
+          SIMPLER
         </h1>
 
         {/* Subtitle */}
