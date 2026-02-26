@@ -1,35 +1,52 @@
 // TODO: useHarvestEvents hook — replace mock data with on-chain event reads
 
-type VaultTag = 'balanced' | 'aggressive'
+type VaultTag = "balanced" | "aggressive";
 
 interface HarvestEvent {
-  vault: VaultTag
-  strategy: string
-  profit: string
-  keeper: string
-  block: string
+  vault: VaultTag;
+  strategy: string;
+  profit: string;
+  keeper: string;
+  block: string;
 }
 
 const HARVESTS: HarvestEvent[] = [
-  { vault: 'balanced',   strategy: 'Aave wstETH',  profit: '+0.842', keeper: '0x4f2a…c91e', block: '21,847,203' },
-  { vault: 'aggressive', strategy: 'Curve stETH',   profit: '+1.204', keeper: '0x4f2a…c91e', block: '21,844,891' },
-  { vault: 'balanced',   strategy: 'Lido wstETH',   profit: '+0.531', keeper: '0x7b1c…a34d', block: '21,841,502' },
-  { vault: 'aggressive', strategy: 'Uniswap V3',    profit: '+0.318', keeper: '0x4f2a…c91e', block: '21,838,774' },
-  { vault: 'balanced',   strategy: 'Curve stETH',   profit: '+0.729', keeper: '0x9e3f…b82c', block: '21,835,113' },
-]
-
-const TAG_STYLES: Record<VaultTag, React.CSSProperties> = {
-  balanced: {
-    color: '#60A5FA',
-    borderColor: '#60A5FA40',
-    background: '#60A5FA10',
+  {
+    vault: "balanced",
+    strategy: "Aave wstETH",
+    profit: "+0.842",
+    keeper: "0x4f2a…c91e",
+    block: "21,847,203",
   },
-  aggressive: {
-    color: 'var(--gold)',
-    borderColor: 'var(--gold-dim)',
-    background: 'var(--gold-dim)',
+  {
+    vault: "aggressive",
+    strategy: "Curve stETH",
+    profit: "+1.204",
+    keeper: "0x4f2a…c91e",
+    block: "21,844,891",
   },
-}
+  {
+    vault: "balanced",
+    strategy: "Lido wstETH",
+    profit: "+0.531",
+    keeper: "0x7b1c…a34d",
+    block: "21,841,502",
+  },
+  {
+    vault: "aggressive",
+    strategy: "Uniswap V3",
+    profit: "+0.318",
+    keeper: "0x4f2a…c91e",
+    block: "21,838,774",
+  },
+  {
+    vault: "balanced",
+    strategy: "Curve stETH",
+    profit: "+0.729",
+    keeper: "0x9e3f…b82c",
+    block: "21,835,113",
+  },
+];
 
 function VaultTag({ type }: { type: VaultTag }) {
   return (
@@ -38,76 +55,71 @@ function VaultTag({ type }: { type: VaultTag }) {
         fontFamily: "'DM Mono', monospace",
         fontSize: 9,
         letterSpacing: 1,
-        textTransform: 'uppercase',
-        padding: '4px 10px',
-        border: '1px solid',
-        ...TAG_STYLES[type],
+        textTransform: "uppercase",
+        color: "var(--muted)",
       }}
     >
-      {type === 'balanced' ? 'Balanced' : 'Aggressive'}
+      {type === "balanced" ? "Balanced" : "Aggressive"}
     </span>
-  )
+  );
 }
 
 export default function HarvestTable() {
   return (
-    <section style={{ padding: '0 60px 120px' }}>
+    <section style={{ padding: "50px 60px 50px" }}>
       {/* Section header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'baseline',
-          justifyContent: 'space-between',
-          marginBottom: 64,
-        }}
-      >
-        <h2
+      <div style={{ marginBottom: 28 }}>
+        <div
           style={{
             fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: 48,
+            fontSize: 40,
             letterSpacing: 2,
-            color: 'var(--text)',
+            lineHeight: 1,
+            color: "var(--text)",
           }}
         >
-          Harvest History
-        </h2>
-        <span
+          HARVEST HISTORY
+        </div>
+        <p
           style={{
-            fontFamily: "'DM Mono', monospace",
-            fontSize: 11,
-            letterSpacing: 1,
-            color: 'var(--muted)',
+            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: 300,
+            fontSize: 14,
+            color: "var(--muted)",
+            margin: "10px 0 0",
           }}
         >
-          Last 5 events
-        </span>
+          Rewards automatically harvested and compounded. On-chain, verifiable.
+        </p>
       </div>
 
       <table
         style={{
-          width: '100%',
-          borderCollapse: 'collapse',
+          width: "100%",
+          borderCollapse: "collapse",
         }}
       >
         <thead>
           <tr>
-            {['Vault', 'Strategy', 'Profit (WETH)', 'Keeper', 'Block'].map((col) => (
-              <th
-                key={col}
-                style={{
-                  fontFamily: "'DM Mono', monospace",
-                  fontSize: 10,
-                  letterSpacing: 2,
-                  textTransform: 'uppercase',
-                  color: 'var(--muted)',
-                  padding: '16px 24px',
-                  textAlign: 'left',
-                  borderBottom: '1px solid var(--border)',
-                }}
-              >
-                {col}
-              </th>
-            ))}
+            {["Vault", "Strategy", "Profit (WETH)", "Keeper", "Block"].map(
+              (col) => (
+                <th
+                  key={col}
+                  style={{
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: 13,
+                    letterSpacing: 2,
+                    textTransform: "uppercase",
+                    color: "var(--text)",
+                    padding: "16px 24px",
+                    textAlign: "left",
+                    borderBottom: "1px solid var(--border)",
+                  }}
+                >
+                  {col}
+                </th>
+              ),
+            )}
           </tr>
         </thead>
         <tbody>
@@ -117,35 +129,33 @@ export default function HarvestTable() {
         </tbody>
       </table>
     </section>
-  )
+  );
 }
 
 function HarvestRow({ event: h }: { event: HarvestEvent }) {
   return (
-    <tr
-      style={{ cursor: 'default' }}
-      onMouseEnter={(e) => {
-        Array.from(e.currentTarget.querySelectorAll('td')).forEach(
-          (td) => ((td as HTMLElement).style.background = 'var(--surface)')
-        )
-      }}
-      onMouseLeave={(e) => {
-        Array.from(e.currentTarget.querySelectorAll('td')).forEach(
-          (td) => ((td as HTMLElement).style.background = 'transparent')
-        )
-      }}
-    >
-      <td style={{ fontSize: 13, padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
+    <tr>
+      <td
+        style={{
+          fontSize: 13,
+          padding: "20px 24px",
+        }}
+      >
         <VaultTag type={h.vault} />
       </td>
-      <td style={{ fontSize: 13, padding: '20px 24px', borderBottom: '1px solid var(--border)', color: 'var(--text)' }}>
+      <td
+        style={{
+          fontSize: 13,
+          padding: "20px 24px",
+          color: "var(--muted)",
+        }}
+      >
         {h.strategy}
       </td>
       <td
         style={{
-          padding: '20px 24px',
-          borderBottom: '1px solid var(--border)',
-          color: 'var(--green)',
+          padding: "20px 24px",
+          color: "var(--green)",
           fontFamily: "'DM Mono', monospace",
           fontSize: 13,
         }}
@@ -154,9 +164,8 @@ function HarvestRow({ event: h }: { event: HarvestEvent }) {
       </td>
       <td
         style={{
-          padding: '20px 24px',
-          borderBottom: '1px solid var(--border)',
-          color: 'var(--muted)',
+          padding: "20px 24px",
+          color: "var(--muted)",
           fontFamily: "'DM Mono', monospace",
           fontSize: 12,
         }}
@@ -165,9 +174,8 @@ function HarvestRow({ event: h }: { event: HarvestEvent }) {
       </td>
       <td
         style={{
-          padding: '20px 24px',
-          borderBottom: '1px solid var(--border)',
-          color: 'var(--muted)',
+          padding: "20px 24px",
+          color: "var(--muted)",
           fontFamily: "'DM Mono', monospace",
           fontSize: 12,
         }}
@@ -175,5 +183,5 @@ function HarvestRow({ event: h }: { event: HarvestEvent }) {
         {h.block}
       </td>
     </tr>
-  )
+  );
 }

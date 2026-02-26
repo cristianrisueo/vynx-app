@@ -1,29 +1,35 @@
-import { useAccount, useConnect, useConnectors } from 'wagmi'
+import { useAccount, useConnect, useConnectors } from "wagmi";
 
 export interface Strategy {
-  label: string
-  pct: number
-  delay?: string
+  label: string;
+  pct: number;
+  delay?: string;
 }
 
 export interface VaultCardProps {
-  name: string
-  apy: string
-  tvl: string
-  sharePrice: string
-  strategies: Strategy[]
+  name: string;
+  apy: string;
+  tvl: string;
+  sharePrice: string;
+  strategies: Strategy[];
 }
 
-export default function VaultCard({ name, apy, tvl, sharePrice, strategies }: VaultCardProps) {
+export default function VaultCard({
+  name,
+  apy,
+  tvl,
+  sharePrice,
+  strategies,
+}: VaultCardProps) {
   // TODO: useVault hook — replace mock data with on-chain reads
-  const { isConnected } = useAccount()
-  const { connect } = useConnect()
-  const connectors = useConnectors()
+  const { isConnected } = useAccount();
+  const { connect } = useConnect();
+  const connectors = useConnectors();
 
   function handleDeposit() {
     if (!isConnected) {
-      const injected = connectors[0]
-      if (injected) connect({ connector: injected })
+      const injected = connectors[0];
+      if (injected) connect({ connector: injected });
     }
     // TODO: open deposit modal when connected
   }
@@ -31,7 +37,14 @@ export default function VaultCard({ name, apy, tvl, sharePrice, strategies }: Va
   return (
     <div
       className="vault-card"
-      style={{ padding: 56, display: 'flex', flexDirection: 'column', gap: 40, border: '1px solid var(--border)' }}
+      style={{
+        padding: 56,
+        display: "flex",
+        flexDirection: "column",
+        gap: 40,
+        borderRight: "1px solid var(--border)",
+        borderBottom: "1px solid var(--border)",
+      }}
     >
       {/* Vault name */}
       <div
@@ -40,7 +53,7 @@ export default function VaultCard({ name, apy, tvl, sharePrice, strategies }: Va
           fontSize: 40,
           letterSpacing: 3,
           lineHeight: 1,
-          color: 'var(--text)',
+          color: "var(--text)",
         }}
       >
         {name}
@@ -53,8 +66,8 @@ export default function VaultCard({ name, apy, tvl, sharePrice, strategies }: Va
             fontFamily: "'DM Mono', monospace",
             fontSize: 10,
             letterSpacing: 2,
-            textTransform: 'uppercase',
-            color: 'var(--muted)',
+            textTransform: "uppercase",
+            color: "var(--muted)",
             marginBottom: 8,
           }}
         >
@@ -66,7 +79,7 @@ export default function VaultCard({ name, apy, tvl, sharePrice, strategies }: Va
             fontSize: 56,
             letterSpacing: 1,
             lineHeight: 1,
-            color: 'var(--green)',
+            color: "var(--green)",
           }}
         >
           {apy}
@@ -76,8 +89,8 @@ export default function VaultCard({ name, apy, tvl, sharePrice, strategies }: Va
       {/* Stats grid */}
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
           gap: 32,
         }}
       >
@@ -93,12 +106,12 @@ export default function VaultCard({ name, apy, tvl, sharePrice, strategies }: Va
           <div key={i}>
             <div
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
+                display: "flex",
+                justifyContent: "space-between",
                 fontFamily: "'DM Mono', monospace",
                 fontSize: 10,
                 letterSpacing: 1,
-                color: 'var(--muted)',
+                color: "var(--muted)",
                 marginBottom: 6,
               }}
             >
@@ -108,16 +121,16 @@ export default function VaultCard({ name, apy, tvl, sharePrice, strategies }: Va
             <div
               style={{
                 height: 2,
-                background: 'var(--border)',
+                background: "var(--border)",
                 marginBottom: 12,
-                position: 'relative',
+                position: "relative",
               }}
             >
               <div
                 className="strategy-bar-fill"
                 style={{
                   width: `${s.pct}%`,
-                  animationDelay: s.delay ?? '0s',
+                  animationDelay: s.delay ?? "0s",
                 }}
               />
             </div>
@@ -126,12 +139,14 @@ export default function VaultCard({ name, apy, tvl, sharePrice, strategies }: Va
       </div>
 
       {/* Actions */}
-      <div style={{ display: 'flex', gap: 12 }}>
-        <VaultButton deposit onClick={handleDeposit}>Deposit</VaultButton>
+      <div style={{ display: "flex", gap: 12 }}>
+        <VaultButton deposit onClick={handleDeposit}>
+          Deposit
+        </VaultButton>
         <VaultButton>Withdraw</VaultButton>
       </div>
     </div>
-  )
+  );
 }
 
 /* ── Sub-components ── */
@@ -144,8 +159,8 @@ function StatItem({ label, value }: { label: string; value: string }) {
           fontFamily: "'DM Mono', monospace",
           fontSize: 10,
           letterSpacing: 2,
-          textTransform: 'uppercase',
-          color: 'var(--muted)',
+          textTransform: "uppercase",
+          color: "var(--muted)",
           marginBottom: 6,
         }}
       >
@@ -156,13 +171,13 @@ function StatItem({ label, value }: { label: string; value: string }) {
           fontFamily: "'DM Mono', monospace",
           fontSize: 24,
           fontWeight: 500,
-          color: 'var(--text)',
+          color: "var(--text)",
         }}
       >
         {value}
       </div>
     </div>
-  )
+  );
 }
 
 function VaultButton({
@@ -170,9 +185,9 @@ function VaultButton({
   deposit,
   onClick,
 }: {
-  children: React.ReactNode
-  deposit?: boolean
-  onClick?: () => void
+  children: React.ReactNode;
+  deposit?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <button
@@ -182,33 +197,35 @@ function VaultButton({
         fontFamily: "'DM Mono', monospace",
         fontSize: 11,
         letterSpacing: 2,
-        textTransform: 'uppercase',
+        textTransform: "uppercase",
         padding: 14,
-        border: deposit ? '1px solid var(--gold)' : '1px solid #2E2E38',
-        background: 'transparent',
-        color: deposit ? 'var(--gold)' : 'var(--text)',
-        cursor: 'pointer',
-        textAlign: 'center',
-        transition: deposit ? 'opacity 0.15s ease' : 'border-color 0.15s ease, color 0.15s ease',
+        border: deposit ? "1px solid var(--gold)" : "1px solid #2E2E38",
+        background: "transparent",
+        color: deposit ? "var(--gold)" : "var(--text)",
+        cursor: "pointer",
+        textAlign: "center",
+        transition: deposit
+          ? "opacity 0.15s ease"
+          : "border-color 0.15s ease, color 0.15s ease",
       }}
       onMouseEnter={(e) => {
         if (deposit) {
-          e.currentTarget.style.opacity = '0.75'
+          e.currentTarget.style.opacity = "0.75";
         } else {
-          e.currentTarget.style.borderColor = 'var(--gold)'
-          e.currentTarget.style.color = 'var(--gold)'
+          e.currentTarget.style.borderColor = "var(--gold)";
+          e.currentTarget.style.color = "var(--gold)";
         }
       }}
       onMouseLeave={(e) => {
         if (deposit) {
-          e.currentTarget.style.opacity = '1'
+          e.currentTarget.style.opacity = "1";
         } else {
-          e.currentTarget.style.borderColor = '#2E2E38'
-          e.currentTarget.style.color = 'var(--text)'
+          e.currentTarget.style.borderColor = "#2E2E38";
+          e.currentTarget.style.color = "var(--text)";
         }
       }}
     >
       {children}
     </button>
-  )
+  );
 }
