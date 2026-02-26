@@ -23,7 +23,7 @@ export default function Navbar() {
   return (
     <nav
       style={{
-        position: "fixed",
+        position: "absolute",
         top: 0,
         left: 0,
         right: 0,
@@ -38,7 +38,7 @@ export default function Navbar() {
       <div
         style={{
           fontFamily: "'Bebas Neue', sans-serif",
-          fontSize: 28,
+          fontSize: 38,
           letterSpacing: 4,
           color: "var(--text)",
         }}

@@ -39,7 +39,7 @@ export default function Hero() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          padding: "100px 60px 60px 80px",
+          padding: "100px 60px 60px 60px",
         }}
       >
         {/* Eyebrow */}
