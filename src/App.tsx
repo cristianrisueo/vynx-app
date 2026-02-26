@@ -1,6 +1,5 @@
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
-import Ticker from '@/components/Ticker'
 import MetricsStrip from '@/components/MetricsStrip'
 import VaultsGrid from '@/components/VaultsGrid'
 import HarvestTable from '@/components/HarvestTable'
@@ -11,7 +10,6 @@ function App() {
     <div style={{ background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
       <Navbar />
       <Hero />
-      <Ticker />
       <MetricsStrip />
       <VaultsGrid />
       <HarvestTable />
