@@ -28,37 +28,6 @@ const VAULTS: VaultCardProps[] = [
 export default function VaultsGrid() {
   return (
     <section style={{ padding: '120px 60px' }}>
-      {/* Section header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'baseline',
-          justifyContent: 'space-between',
-          marginBottom: 64,
-        }}
-      >
-        <h2
-          style={{
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: 48,
-            letterSpacing: 2,
-            color: 'var(--text)',
-          }}
-        >
-          Choose Your Tier
-        </h2>
-        <span
-          style={{
-            fontFamily: "'DM Mono', monospace",
-            fontSize: 11,
-            letterSpacing: 1,
-            color: 'var(--muted)',
-          }}
-        >
-          Connect wallet to deposit
-        </span>
-      </div>
-
       {/* Grid */}
       <div
         style={{

@@ -1,3 +1,5 @@
+import { useAccount, useConnect, useConnectors } from 'wagmi'
+
 export interface Strategy {
   label: string
   pct: number
@@ -14,6 +16,18 @@ export interface VaultCardProps {
 
 export default function VaultCard({ name, apy, tvl, sharePrice, strategies }: VaultCardProps) {
   // TODO: useVault hook — replace mock data with on-chain reads
+  const { isConnected } = useAccount()
+  const { connect } = useConnect()
+  const connectors = useConnectors()
+
+  function handleDeposit() {
+    if (!isConnected) {
+      const injected = connectors[0]
+      if (injected) connect({ connector: injected })
+    }
+    // TODO: open deposit modal when connected
+  }
+
   return (
     <div
       className="vault-card"
@@ -74,7 +88,7 @@ export default function VaultCard({ name, apy, tvl, sharePrice, strategies }: Va
       </div>
 
       {/* Strategy breakdown */}
-      <div>
+      <div style={{ minHeight: 120 }}>
         {strategies.map((s, i) => (
           <div key={i}>
             <div
@@ -113,7 +127,7 @@ export default function VaultCard({ name, apy, tvl, sharePrice, strategies }: Va
 
       {/* Actions */}
       <div style={{ display: 'flex', gap: 12 }}>
-        <VaultButton deposit>Deposit</VaultButton>
+        <VaultButton deposit onClick={handleDeposit}>Deposit</VaultButton>
         <VaultButton>Withdraw</VaultButton>
       </div>
     </div>
@@ -170,9 +184,9 @@ function VaultButton({
         letterSpacing: 2,
         textTransform: 'uppercase',
         padding: 14,
-        border: deposit ? '1px solid var(--gold)' : '1px solid var(--border)',
+        border: deposit ? '1px solid var(--gold)' : '1px solid #2E2E38',
         background: 'transparent',
-        color: deposit ? 'var(--gold)' : 'var(--muted)',
+        color: deposit ? 'var(--gold)' : 'var(--text)',
         cursor: 'pointer',
         textAlign: 'center',
         transition: deposit ? 'opacity 0.15s ease' : 'border-color 0.15s ease, color 0.15s ease',
@@ -189,8 +203,8 @@ function VaultButton({
         if (deposit) {
           e.currentTarget.style.opacity = '1'
         } else {
-          e.currentTarget.style.borderColor = 'var(--border)'
-          e.currentTarget.style.color = 'var(--muted)'
+          e.currentTarget.style.borderColor = '#2E2E38'
+          e.currentTarget.style.color = 'var(--text)'
         }
       }}
     >
