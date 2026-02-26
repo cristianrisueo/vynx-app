@@ -1,4 +1,6 @@
-export default function Hero() {
+type Page = 'home' | 'docs'
+
+export default function Hero({ setPage }: { setPage: (page: Page) => void }) {
   return (
     <section
       style={{
@@ -110,6 +112,7 @@ export default function Hero() {
           style={{ display: "flex", alignItems: "center", gap: 24 }}
         >
           <button
+            onClick={() => setPage('docs')}
             style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: 14,
@@ -133,7 +136,10 @@ export default function Hero() {
           >
             Docs
           </button>
-          <button
+          <a
+            href="https://github.com/cristianrisueo/vynx"
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: 14,
@@ -145,6 +151,8 @@ export default function Hero() {
               padding: "16px 40px",
               cursor: "pointer",
               transition: "opacity 0.15s ease",
+              textDecoration: "none",
+              display: "inline-block",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.color = "var(--text)";
@@ -156,7 +164,7 @@ export default function Hero() {
             }}
           >
             Github
-          </button>
+          </a>
         </div>
       </div>
 

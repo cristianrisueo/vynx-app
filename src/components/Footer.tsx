@@ -31,7 +31,7 @@ export default function Footer() {
         }}
       >
         Built by <a href="https://github.com/cristianrisueo">@cristianrisueo</a>{" "}
-        · Non-custodial · Open Source
+        · Open source · Permissionless
       </div>
 
       {/* Network */}
