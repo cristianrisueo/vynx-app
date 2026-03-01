@@ -1,6 +1,7 @@
 import { useVault } from "@/hooks/useVault"
 import { useHarvests } from "@/hooks/useHarvests"
 import { ADDRESSES } from "@/config/addresses"
+import Skeleton from "./Skeleton"
 
 // Formatea un valor en ETH: >1000 → "1.2K ETH", resto → "847.3 ETH"
 // TODO: multiplicar por precio ETH/USD cuando se añada oracle de precio
@@ -19,13 +20,13 @@ export default function MetricsStrip() {
   // TVL combinado de ambos vaults en ETH
   const isLoadingTvl = balanced.isLoading || aggressive.isLoading
   const tvlRaw = parseFloat(balanced.tvl) + parseFloat(aggressive.tvl)
-  const tvlStr = isLoadingTvl ? "—" : formatEth(tvlRaw)
+  const tvlStr = isLoadingTvl ? null : formatEth(tvlRaw)
 
   // Suma de profit de todos los eventos en los últimos 10,000 bloques
   const totalProfit = harvests
     ? harvests.reduce((acc, h) => acc + parseFloat(h.profit.replace("+", "")), 0)
     : 0
-  const harvestStr = harvestsLoading ? "—" : `${totalProfit.toFixed(3)} WETH`
+  const harvestStr = harvestsLoading ? null : `${totalProfit.toFixed(3)} WETH`
 
   return (
     <div
@@ -85,7 +86,7 @@ function MetricCell({
   children,
 }: {
   label: string;
-  value: string;
+  value: string | null;
   borderRight?: boolean;
   children: React.ReactNode;
 }) {
@@ -117,7 +118,7 @@ function MetricCell({
           color: "var(--text)",
         }}
       >
-        {value}
+        {value === null ? <Skeleton width={180} height={52} /> : value}
       </div>
       <div style={{ marginTop: 8 }}>{children}</div>
     </div>

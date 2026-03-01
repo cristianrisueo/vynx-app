@@ -1,70 +1,92 @@
-import { useState } from "react"
-import { useAccount, useConnect, useConnectors } from "wagmi"
-import type { Address } from "viem"
-import { useVault } from "@/hooks/useVault"
-import DepositModal from "./DepositModal"
-import WithdrawModal from "./WithdrawModal"
-
-export interface Strategy {
-  label: string;
-  pct: number;
-  delay?: string;
-}
+import { useState } from "react";
+import { useAccount, useConnect, useConnectors } from "wagmi";
+import type { Address } from "viem";
+import { useVault } from "@/hooks/useVault";
+import { useStrategyAllocations } from "@/hooks/useStrategyAllocations";
+import { useVaultAPY } from "@/hooks/useVaultAPY";
+import DepositModal from "./DepositModal";
+import WithdrawModal from "./WithdrawModal";
+import Skeleton from "./Skeleton";
 
 export interface VaultCardProps {
   name: string;
-  apy: string;
   vaultAddress: Address;
   routerAddress: Address;
-  strategies: Strategy[];
+  strategyManagerAddress: Address;
+  tier: "balanced" | "aggressive";
 }
 
 export default function VaultCard({
   name,
-  apy,
   vaultAddress,
   routerAddress,
-  strategies,
+  strategyManagerAddress,
+  tier,
 }: VaultCardProps) {
   const { isConnected } = useAccount();
   const { connect } = useConnect();
   const connectors = useConnectors();
 
-  // Datos on-chain del vault
-  // TODO: calcular APY desde share price histórico cuando haya datos suficientes
-  const { sharePrice, userPosition, isLoading } = useVault(vaultAddress)
+  // Datos on-chain del vault (TVL, share price, posición del usuario)
+  const {
+    sharePrice,
+    userPosition,
+    isLoading: vault_loading,
+  } = useVault(vaultAddress);
+
+  // Allocations reales desde el StrategyManager
+  const {
+    strategies: strategy_allocations,
+    totalAllocated,
+    isLoading: alloc_loading,
+  } = useStrategyAllocations(strategyManagerAddress);
+
+  // APY ponderado por allocation real
+  const {
+    apy,
+    isEstimated,
+    isLoading: apy_loading,
+  } = useVaultAPY(strategyManagerAddress, tier);
 
   // Estado de los modales
-  const [depositOpen, setDepositOpen] = useState(false)
-  const [withdrawOpen, setWithdrawOpen] = useState(false)
+  const [depositOpen, setDepositOpen] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   function handleDeposit() {
     if (!isConnected) {
-      const injected = connectors[0]
-      if (injected) connect({ connector: injected })
-      return
+      const injected = connectors[0];
+      if (injected) connect({ connector: injected });
+      return;
     }
-    setDepositOpen(true)
+    setDepositOpen(true);
   }
 
   function handleWithdraw() {
     if (!isConnected) {
-      const injected = connectors[0]
-      if (injected) connect({ connector: injected })
-      return
+      const injected = connectors[0];
+      if (injected) connect({ connector: injected });
+      return;
     }
-    setWithdrawOpen(true)
+    setWithdrawOpen(true);
   }
 
-  // Formatea la posición del usuario: "—" si 0, "X.XXXX WETH" si tiene
-  const userPositionFormatted =
-    isLoading || parseFloat(userPosition) === 0
+  // Formatea la posición del usuario: "—" si 0 o cargando
+  const user_position_formatted =
+    vault_loading || parseFloat(userPosition) === 0
       ? "—"
-      : `${parseFloat(userPosition).toFixed(4)} WETH`
+      : `${parseFloat(userPosition).toFixed(4)} WETH`;
 
-  const sharePriceFormatted = isLoading
-    ? "—"
-    : parseFloat(sharePrice).toFixed(4)
+  const share_price_formatted = vault_loading
+    ? null
+    : parseFloat(sharePrice).toFixed(4);
+
+  // Display del APY: skeleton si carga, "~X.X%" si estimado, "X.X%" si real
+  const apy_display = apy_loading
+    ? null
+    : `${isEstimated ? "~" : ""}${apy.toFixed(1)}%`;
+
+  // Vault vacío y no cargando allocations
+  const vault_vacio = !alloc_loading && totalAllocated === 0n;
 
   return (
     <>
@@ -115,7 +137,7 @@ export default function VaultCard({
               color: "var(--green)",
             }}
           >
-            {apy}
+            {apy_display === null ? <Skeleton width={140} height={56} /> : apy_display}
           </div>
         </div>
 
@@ -127,46 +149,63 @@ export default function VaultCard({
             gap: 32,
           }}
         >
-          <StatItem label="Your Position" value={userPositionFormatted} />
-          <StatItem label="Share Price" value={sharePriceFormatted} />
+          <StatItem label="Your Position" value={user_position_formatted} />
+          <StatItem label="Share Price" value={share_price_formatted} />
         </div>
 
-        {/* Desglose de estrategias */}
+        {/* Desglose de estrategias — datos reales del StrategyManager */}
         <div style={{ minHeight: 120 }}>
-          {strategies.map((s, i) => (
-            <div key={i}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontFamily: "'DM Mono', monospace",
-                  fontSize: 10,
-                  letterSpacing: 1,
-                  color: "var(--muted)",
-                  marginBottom: 6,
-                }}
-              >
-                <span>{s.label}</span>
-                <span>{s.pct}%</span>
-              </div>
-              <div
-                style={{
-                  height: 2,
-                  background: "var(--border)",
-                  marginBottom: 12,
-                  position: "relative",
-                }}
-              >
-                <div
-                  className="strategy-bar-fill"
-                  style={{
-                    width: `${s.pct}%`,
-                    animationDelay: s.delay ?? "0s",
-                  }}
-                />
-              </div>
+          {/* Vault vacío sin allocations */}
+          {vault_vacio && (
+            <div
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 11,
+                color: "var(--muted)",
+                paddingTop: 8,
+              }}
+            >
+              No funds allocated yet
             </div>
-          ))}
+          )}
+
+          {/* Barras de estrategia */}
+          {!vault_vacio &&
+            strategy_allocations.map((s, i) => (
+              <div key={s.address}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: 10,
+                    letterSpacing: 1,
+                    color: "var(--muted)",
+                    marginBottom: 6,
+                  }}
+                >
+                  <span>{s.name}</span>
+                  <span>{alloc_loading ? "—" : `${s.pct.toFixed(0)}%`}</span>
+                </div>
+                <div
+                  style={{
+                    height: 2,
+                    background: "var(--border)",
+                    marginBottom: 12,
+                    position: "relative",
+                  }}
+                >
+                  <div
+                    className="strategy-bar-fill"
+                    style={{
+                      width: alloc_loading ? "0%" : `${s.pct}%`,
+                      animationDelay: `${i * 0.1}s`,
+                      opacity: alloc_loading ? 0.3 : 1,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
         </div>
 
         {/* Acciones */}
@@ -199,7 +238,7 @@ export default function VaultCard({
 
 /* ── Sub-components ── */
 
-function StatItem({ label, value }: { label: string; value: string }) {
+function StatItem({ label, value }: { label: string; value: string | null }) {
   return (
     <div>
       <div
@@ -222,7 +261,7 @@ function StatItem({ label, value }: { label: string; value: string }) {
           color: "var(--text)",
         }}
       >
-        {value}
+        {value === null ? <Skeleton width={100} height={24} /> : value}
       </div>
     </div>
   );

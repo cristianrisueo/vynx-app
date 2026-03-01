@@ -78,59 +78,8 @@ export default function HarvestTable() {
           </tr>
         </thead>
         <tbody>
-          {isLoading && (
-            <tr>
-              <td
-                colSpan={5}
-                style={{
-                  padding: "40px 24px",
-                  textAlign: "center",
-                  fontFamily: "'DM Mono', monospace",
-                  fontSize: 12,
-                  color: "var(--muted)",
-                }}
-              >
-                Loading harvest history...
-              </td>
-            </tr>
-          )}
-
-          {isError && !isLoading && (
-            <tr>
-              <td
-                colSpan={5}
-                style={{
-                  padding: "40px 24px",
-                  textAlign: "center",
-                  fontFamily: "'DM Mono', monospace",
-                  fontSize: 12,
-                  color: "var(--muted)",
-                }}
-              >
-                Failed to load harvest history
-              </td>
-            </tr>
-          )}
-
-          {!isLoading && !isError && harvests?.length === 0 && (
-            <tr>
-              <td
-                colSpan={5}
-                style={{
-                  padding: "40px 24px",
-                  textAlign: "center",
-                  fontFamily: "'DM Mono', monospace",
-                  fontSize: 12,
-                  color: "var(--muted)",
-                }}
-              >
-                No harvests recorded yet
-              </td>
-            </tr>
-          )}
-
-          {!isLoading &&
-            harvests?.map((h, i) => (
+          {(!isLoading && !isError && harvests && harvests.length > 0)
+            ? harvests.map((h, i) => (
               <tr key={i}>
                 <td style={{ fontSize: 13, padding: "20px 24px" }}>
                   <VaultBadge type={h.vault} />
@@ -174,6 +123,23 @@ export default function HarvestTable() {
                 >
                   {h.block}
                 </td>
+              </tr>
+            ))
+            : Array.from({ length: 5 }, (_, i) => (
+              <tr key={`empty-${i}`}>
+                {Array.from({ length: 5 }, (_, j) => (
+                  <td
+                    key={j}
+                    style={{
+                      padding: "20px 24px",
+                      color: "var(--muted)",
+                      fontFamily: "'DM Mono', monospace",
+                      fontSize: 13,
+                    }}
+                  >
+                    —
+                  </td>
+                ))}
               </tr>
             ))}
         </tbody>

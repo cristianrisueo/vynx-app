@@ -42,8 +42,8 @@ export function useVault(vaultAddress: Address): UseVaultResult {
       },
     ],
     query: {
-      refetchInterval: 30_000,
-      staleTime: 15_000,
+      refetchInterval: 60_000,
+      staleTime: 60_000,
       // Si no hay wallet, igual leemos TVL y sharePrice — solo userShares será 0
     },
   })
