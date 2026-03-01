@@ -40,6 +40,7 @@ const SECTIONS = [
   { id: "security", title: "Security Model" },
   { id: "contracts", title: "Contract Registry" },
   { id: "tests", title: "Test Suite" },
+  { id: "acknowledgements", title: "Acknowledgements" },
 ];
 
 // ─── Address helper ───────────────────────────────────────────────────────────
@@ -1460,7 +1461,7 @@ router.zapWithdrawERC20(
           {/* ──────────────────────────────────────────────────────────── */}
           {/* 7. TEST SUITE                                                */}
           {/* ──────────────────────────────────────────────────────────── */}
-          <section id="tests" className="scroll-mt-32 space-y-8 pb-24">
+          <section id="tests" className="scroll-mt-32 space-y-8">
             <div className="space-y-2">
               <SectionTag label="Foundry · Ethereum Mainnet Fork · No Mocks" />
               <H2>Test Suite</H2>
@@ -1724,11 +1725,11 @@ forge doc --serve --port 4000`}
               </CodeBlock>
             </div>
 
-            {/* Acknowledgements */}
-            <div className="space-y-4 pt-4">
-              <h3 className="text-vynx-text font-mono text-sm uppercase tracking-widest">
-                Acknowledgements
-              </h3>
+          </section>
+
+          <section id="acknowledgements" className="scroll-mt-32 space-y-8 pb-24">
+            <H2>Acknowledgements</H2>
+            <div className="space-y-4">
               <p className="text-sm text-vynx-muted">
                 This project would not have been possible without three key
                 mentors.
