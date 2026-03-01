@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 
-export default function Navbar() {
+export default function Navbar({ onLogoClick }: { onLogoClick?: () => void } = {}) {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
@@ -36,11 +36,20 @@ export default function Navbar() {
     >
       {/* Logo */}
       <div
+        onClick={onLogoClick}
         style={{
           fontFamily: "'Bebas Neue', sans-serif",
           fontSize: 38,
           letterSpacing: 4,
           color: "var(--text)",
+          cursor: onLogoClick ? "pointer" : "default",
+          transition: "opacity 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          if (onLogoClick) e.currentTarget.style.opacity = "0.75";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = "1";
         }}
       >
         VYN<span style={{ color: "var(--gold)" }}>X</span>
