@@ -41,7 +41,7 @@ export const SUPPORTED_TOKENS = [
     name: "Dai Stablecoin",
     address: "0x6B175474E89094C44Da98b954EedeAC495271d0F" as `0x${string}`,
     decimals: 18,
-    poolFee: 500,
+    poolFee: 3000,
   },
   {
     symbol: "WBTC",

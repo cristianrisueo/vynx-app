@@ -81,8 +81,6 @@ export default function WithdrawModal({
     SUPPORTED_TOKENS[0],
   );
   const [rawWethAmount, setRawWethAmount] = useState("");
-  const [slippage, setSlippage] = useState<0.1 | 0.5 | 1.0>(0.5);
-  const [customSlippage, setCustomSlippage] = useState("");
   const [tokenDropdownOpen, setTokenDropdownOpen] = useState(false);
   const [quotedToken, setQuotedToken] = useState<bigint | null>(null);
   const [quoterLoading, setQuoterLoading] = useState(false);
@@ -179,10 +177,8 @@ export default function WithdrawModal({
       });
   }, [debouncedAmount, outputToken, needsSwap, publicClient]);
 
-  // Slippage efectivo
-  const effectiveSlippage = customSlippage
-    ? parseFloat(customSlippage)
-    : slippage;
+  // Slippage fijo (0.5% — protección estándar contra movimiento de precio)
+  const effectiveSlippage = 0.5;
 
   // Min token out con slippage aplicado
   const minTokenOut =
@@ -670,63 +666,6 @@ export default function WithdrawModal({
               ) : (
                 <span style={{ color: "var(--muted)" }}>—</span>
               )}
-            </div>
-          </div>
-        )}
-
-        {/* ── Slippage (solo para ERC20) ── */}
-        {needsSwap && (
-          <div style={{ marginBottom: 20 }}>
-            <label style={labelStyle}>Slippage</label>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {([0.1, 0.5, 1.0] as const).map((s) => {
-                const isActive = !customSlippage && slippage === s;
-                return (
-                  <button
-                    key={s}
-                    onClick={() => {
-                      setSlippage(s);
-                      setCustomSlippage("");
-                    }}
-                    style={{
-                      ...monoStyle,
-                      fontSize: 11,
-                      letterSpacing: 1,
-                      padding: "8px 12px",
-                      background: "transparent",
-                      border: isActive
-                        ? "1px solid var(--gold)"
-                        : "1px solid var(--border)",
-                      color: isActive ? "var(--gold)" : "var(--muted)",
-                      cursor: "pointer",
-                      transition: "border-color 0.15s ease, color 0.15s ease",
-                    }}
-                  >
-                    {s}%
-                  </button>
-                );
-              })}
-              <input
-                type="number"
-                min="0"
-                max="50"
-                step="0.1"
-                placeholder="Custom %"
-                value={customSlippage}
-                onChange={(e) => setCustomSlippage(e.target.value)}
-                style={{
-                  flex: 1,
-                  ...monoStyle,
-                  fontSize: 11,
-                  padding: "8px 10px",
-                  background: "var(--bg)",
-                  border: customSlippage
-                    ? "1px solid var(--gold)"
-                    : "1px solid var(--border)",
-                  color: customSlippage ? "var(--gold)" : "var(--muted)",
-                  outline: "none",
-                }}
-              />
             </div>
           </div>
         )}

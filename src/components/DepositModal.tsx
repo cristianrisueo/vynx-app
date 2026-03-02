@@ -78,8 +78,6 @@ export default function DepositModal({
     SUPPORTED_TOKENS[0],
   );
   const [rawAmount, setRawAmount] = useState("");
-  const [slippage, setSlippage] = useState<0.1 | 0.5 | 1.0>(0.5);
-  const [customSlippage, setCustomSlippage] = useState("");
   const [tokenDropdownOpen, setTokenDropdownOpen] = useState(false);
   const [quotedWeth, setQuotedWeth] = useState<bigint | null>(null);
   const [quoterLoading, setQuoterLoading] = useState(false);
@@ -201,10 +199,8 @@ export default function DepositModal({
     });
   }, [debouncedAmount, selectedToken, needsSwap, fetchQuote]);
 
-  // Slippage efectivo (custom si está definido, sino el seleccionado)
-  const effectiveSlippage = customSlippage
-    ? parseFloat(customSlippage)
-    : slippage;
+  // Slippage fijo (0.5% — protección estándar contra movimiento de precio)
+  const effectiveSlippage = 0.5;
 
   // Min WETH out con slippage aplicado
   const minWethOut =
@@ -225,23 +221,50 @@ export default function DepositModal({
     writeContract,
     data: txHash,
     isPending,
+    error: writeError,
     reset: resetWrite,
   } = useWriteContract();
 
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
-    hash: txHash,
-  });
+  const {
+    isLoading: isConfirming,
+    isSuccess,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({ hash: txHash });
 
   // ── Escritura: aprobación ERC20 (par independiente) ──────────────────────
   const {
     writeContract: writeApprove,
     data: approveTxHash,
     isPending: isApprovePending,
+    error: approveWriteError,
     reset: resetApprove,
   } = useWriteContract();
 
-  const { isLoading: isApproveConfirming, isSuccess: isApproveSuccess } =
-    useWaitForTransactionReceipt({ hash: approveTxHash });
+  const {
+    isLoading: isApproveConfirming,
+    isSuccess: isApproveSuccess,
+    error: approveReceiptError,
+  } = useWaitForTransactionReceipt({ hash: approveTxHash });
+
+  // Logging de errores para diagnóstico
+  useEffect(() => {
+    if (approveWriteError) console.error("[Deposit] Approve wallet error:", approveWriteError);
+  }, [approveWriteError]);
+
+  useEffect(() => {
+    if (approveReceiptError) console.error("[Deposit] Approve receipt error:", approveReceiptError);
+  }, [approveReceiptError]);
+
+  useEffect(() => {
+    if (writeError) console.error("[Deposit] Deposit wallet error:", writeError);
+  }, [writeError]);
+
+  useEffect(() => {
+    if (receiptError) {
+      console.error("[Deposit] Deposit receipt error:", receiptError);
+      setErrorMsg(receiptError.message ?? "Transaction reverted. Check console for details.");
+    }
+  }, [receiptError]);
 
   // Reset del estado al cambiar de token
   useEffect(() => {
@@ -722,63 +745,6 @@ export default function DepositModal({
               ) : (
                 <span style={{ color: "var(--muted)" }}>—</span>
               )}
-            </div>
-          </div>
-        )}
-
-        {/* ── Slippage (solo para ERC20) ── */}
-        {needsSwap && (
-          <div style={{ marginBottom: 20 }}>
-            <label style={labelStyle}>Slippage</label>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {([0.1, 0.5, 1.0] as const).map((s) => {
-                const isActive = !customSlippage && slippage === s;
-                return (
-                  <button
-                    key={s}
-                    onClick={() => {
-                      setSlippage(s);
-                      setCustomSlippage("");
-                    }}
-                    style={{
-                      ...monoStyle,
-                      fontSize: 11,
-                      letterSpacing: 1,
-                      padding: "8px 12px",
-                      background: "transparent",
-                      border: isActive
-                        ? "1px solid var(--gold)"
-                        : "1px solid var(--border)",
-                      color: isActive ? "var(--gold)" : "var(--muted)",
-                      cursor: "pointer",
-                      transition: "border-color 0.15s ease, color 0.15s ease",
-                    }}
-                  >
-                    {s}%
-                  </button>
-                );
-              })}
-              <input
-                type="number"
-                min="0"
-                max="50"
-                step="0.1"
-                placeholder="Custom %"
-                value={customSlippage}
-                onChange={(e) => setCustomSlippage(e.target.value)}
-                style={{
-                  flex: 1,
-                  ...monoStyle,
-                  fontSize: 11,
-                  padding: "8px 10px",
-                  background: "var(--bg)",
-                  border: customSlippage
-                    ? "1px solid var(--gold)"
-                    : "1px solid var(--border)",
-                  color: customSlippage ? "var(--gold)" : "var(--muted)",
-                  outline: "none",
-                }}
-              />
             </div>
           </div>
         )}
