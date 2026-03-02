@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react"
-import { createPortal } from "react-dom"
+import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   useAccount,
   useConnect,
@@ -8,35 +8,35 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
   usePublicClient,
-} from "wagmi"
-import { useQueryClient } from "@tanstack/react-query"
-import { parseUnits, formatUnits } from "viem"
-import type { Address } from "viem"
-import { SUPPORTED_TOKENS, QUOTER_V2_ADDRESS } from "@/config/addresses"
-import type { TokenConfig } from "@/config/addresses"
-import { vaultAbi } from "@/abis/vault.abi"
-import { routerAbi } from "@/abis/router.abi"
-import { erc20Abi } from "@/abis/erc20.abi"
-import { quoterAbi } from "@/abis/quoter.abi"
-import { useVault } from "@/hooks/useVault"
+} from "wagmi";
+import { useQueryClient } from "@tanstack/react-query";
+import { parseUnits, formatUnits } from "viem";
+import type { Address } from "viem";
+import { SUPPORTED_TOKENS, QUOTER_V2_ADDRESS } from "@/config/addresses";
+import type { TokenConfig } from "@/config/addresses";
+import { vaultAbi } from "@/abis/vault.abi";
+import { routerAbi } from "@/abis/router.abi";
+import { erc20Abi } from "@/abis/erc20.abi";
+import { quoterAbi } from "@/abis/quoter.abi";
+import { useVault } from "@/hooks/useVault";
 
 // ── Utilidad: debounce genérico ──────────────────────────────────────────────
 function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value)
+  const [debounced, setDebounced] = useState(value);
   useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(t)
-  }, [value, delay])
-  return debounced
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
 }
 
 // ── Props ────────────────────────────────────────────────────────────────────
 interface WithdrawModalProps {
-  isOpen: boolean
-  onClose: () => void
-  vaultAddress: Address
-  routerAddress: Address
-  vaultName: string
+  isOpen: boolean;
+  onClose: () => void;
+  vaultAddress: Address;
+  routerAddress: Address;
+  vaultName: string;
 }
 
 // ── Estilos compartidos ──────────────────────────────────────────────────────
@@ -48,16 +48,16 @@ const labelStyle: React.CSSProperties = {
   color: "var(--muted)",
   marginBottom: 8,
   display: "block",
-}
+};
 
 const monoStyle: React.CSSProperties = {
   fontFamily: "'DM Mono', monospace",
-}
+};
 
 const separatorStyle: React.CSSProperties = {
   borderTop: "1px solid var(--border)",
   margin: "20px 0",
-}
+};
 
 // ── Componente principal ─────────────────────────────────────────────────────
 export default function WithdrawModal({
@@ -67,36 +67,40 @@ export default function WithdrawModal({
   routerAddress,
   vaultName,
 }: WithdrawModalProps) {
-  const { address: userAddress, isConnected } = useAccount()
-  const { connect } = useConnect()
-  const connectors = useConnectors()
-  const publicClient = usePublicClient()
-  const queryClient = useQueryClient()
+  const { address: userAddress, isConnected } = useAccount();
+  const { connect } = useConnect();
+  const connectors = useConnectors();
+  const publicClient = usePublicClient();
+  const queryClient = useQueryClient();
 
   // Datos del vault para saber la posición del usuario
-  const { userPosition } = useVault(vaultAddress)
+  const { userPosition } = useVault(vaultAddress);
 
   // Estado del modal
-  const [outputToken, setOutputToken] = useState<TokenConfig>(SUPPORTED_TOKENS[0])
-  const [rawWethAmount, setRawWethAmount] = useState("")
-  const [slippage, setSlippage] = useState<0.1 | 0.5 | 1.0>(0.5)
-  const [customSlippage, setCustomSlippage] = useState("")
-  const [tokenDropdownOpen, setTokenDropdownOpen] = useState(false)
-  const [quotedToken, setQuotedToken] = useState<bigint | null>(null)
-  const [quoterLoading, setQuoterLoading] = useState(false)
-  const [quoterError, setQuoterError] = useState(false)
-  const [errorMsg, setErrorMsg] = useState("")
+  const [outputToken, setOutputToken] = useState<TokenConfig>(
+    SUPPORTED_TOKENS[0],
+  );
+  const [rawWethAmount, setRawWethAmount] = useState("");
+  const [slippage, setSlippage] = useState<0.1 | 0.5 | 1.0>(0.5);
+  const [customSlippage, setCustomSlippage] = useState("");
+  const [tokenDropdownOpen, setTokenDropdownOpen] = useState(false);
+  const [quotedToken, setQuotedToken] = useState<bigint | null>(null);
+  const [quoterLoading, setQuoterLoading] = useState(false);
+  const [quoterError, setQuoterError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const debouncedAmount = useDebounce(rawWethAmount, 500)
+  const debouncedAmount = useDebounce(rawWethAmount, 500);
 
   // Requiere swap si el token de salida no es ETH ni WETH
-  const needsSwap = outputToken.poolFee !== null
+  const needsSwap = outputToken.poolFee !== null;
 
   // Amount en WETH parseado
   const parsedWethAmount =
-    rawWethAmount && !isNaN(parseFloat(rawWethAmount)) && parseFloat(rawWethAmount) > 0
+    rawWethAmount &&
+    !isNaN(parseFloat(rawWethAmount)) &&
+    parseFloat(rawWethAmount) > 0
       ? parseUnits(rawWethAmount, 18)
-      : 0n
+      : 0n;
 
   // ── Calcular shares necesarias para el WETH solicitado ──────────────────
   const { data: sharesNeededData } = useReadContract({
@@ -108,44 +112,43 @@ export default function WithdrawModal({
       enabled: parsedWethAmount > 0n,
       staleTime: 5_000,
     },
-  })
+  });
 
-  const sharesNeeded = (sharesNeededData as bigint | undefined) ?? 0n
+  const sharesNeeded = (sharesNeededData as bigint | undefined) ?? 0n;
 
   // ── Allowance de shares al router (para ETH y ERC20) ────────────────────
-  const { data: sharesAllowanceData } =
-    useReadContract({
-      address: vaultAddress,
-      abi: erc20Abi,
-      functionName: "allowance",
-      args: [
-        userAddress ?? "0x0000000000000000000000000000000000000000",
-        routerAddress,
-      ],
-      query: {
-        enabled: !!userAddress && outputToken.symbol !== "WETH",
-      },
-    })
+  const { data: sharesAllowanceData } = useReadContract({
+    address: vaultAddress,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: [
+      userAddress ?? "0x0000000000000000000000000000000000000000",
+      routerAddress,
+    ],
+    query: {
+      enabled: !!userAddress && outputToken.symbol !== "WETH",
+    },
+  });
 
-  const sharesAllowance = (sharesAllowanceData as bigint | undefined) ?? 0n
+  const sharesAllowance = (sharesAllowanceData as bigint | undefined) ?? 0n;
 
   const needsShareApproval =
     outputToken.symbol !== "WETH" &&
     sharesNeeded > 0n &&
-    sharesAllowance < sharesNeeded
+    sharesAllowance < sharesNeeded;
 
   // ── Quoter de Uniswap V3 (WETH → outputToken, solo para ERC20) ──────────
   useEffect(() => {
     if (!needsSwap || !debouncedAmount || parseFloat(debouncedAmount) <= 0) {
-      setQuotedToken(null)
-      setQuoterError(false)
-      return
+      setQuotedToken(null);
+      setQuoterError(false);
+      return;
     }
-    if (!publicClient) return
+    if (!publicClient) return;
 
-    const amountIn = parseUnits(debouncedAmount, 18) // WETH tiene 18 decimals
-    setQuoterLoading(true)
-    setQuoterError(false)
+    const amountIn = parseUnits(debouncedAmount, 18); // WETH tiene 18 decimals
+    setQuoterLoading(true);
+    setQuoterError(false);
 
     // simulateContract porque quoteExactInputSingle es nonpayable, no view
     publicClient
@@ -164,20 +167,22 @@ export default function WithdrawModal({
         ],
       })
       .then(({ result }) => {
-        setQuotedToken((result as readonly [bigint, bigint, number, bigint])[0])
-        setQuoterLoading(false)
+        setQuotedToken(
+          (result as readonly [bigint, bigint, number, bigint])[0],
+        );
+        setQuoterLoading(false);
       })
       .catch(() => {
-        setQuotedToken(null)
-        setQuoterLoading(false)
-        setQuoterError(true)
-      })
-  }, [debouncedAmount, outputToken, needsSwap, publicClient])
+        setQuotedToken(null);
+        setQuoterLoading(false);
+        setQuoterError(true);
+      });
+  }, [debouncedAmount, outputToken, needsSwap, publicClient]);
 
   // Slippage efectivo
   const effectiveSlippage = customSlippage
     ? parseFloat(customSlippage)
-    : slippage
+    : slippage;
 
   // Min token out con slippage aplicado
   const minTokenOut =
@@ -185,77 +190,119 @@ export default function WithdrawModal({
       ? (quotedToken *
           BigInt(Math.round((1 - effectiveSlippage / 100) * 10_000))) /
         10_000n
-      : 0n
+      : 0n;
 
-  // ── Escritura: write + confirmación ─────────────────────────────────────
+  // ── Escritura: retiro principal ──────────────────────────────────────────
   const {
     writeContract,
     data: txHash,
     isPending,
     reset: resetWrite,
-  } = useWriteContract()
+  } = useWriteContract();
 
-  const { isLoading: isConfirming, isSuccess } =
-    useWaitForTransactionReceipt({ hash: txHash })
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
+
+  // ── Escritura: aprobación de shares (par independiente) ──────────────────
+  const {
+    writeContract: writeApprove,
+    data: approveTxHash,
+    isPending: isApprovePending,
+    reset: resetApprove,
+  } = useWriteContract();
+
+  const { isLoading: isApproveConfirming, isSuccess: isApproveSuccess } =
+    useWaitForTransactionReceipt({ hash: approveTxHash });
 
   // Reset al cambiar token de salida
   useEffect(() => {
-    setQuotedToken(null)
-    setQuoterError(false)
-    setErrorMsg("")
-  }, [outputToken])
+    setQuotedToken(null);
+    setQuoterError(false);
+    setErrorMsg("");
+    resetWrite();
+    resetApprove();
+  }, [outputToken, resetWrite, resetApprove]);
 
   // Limpiar estado al cerrar
   useEffect(() => {
     if (!isOpen) {
-      setRawWethAmount("")
-      setQuotedToken(null)
-      setErrorMsg("")
-      resetWrite()
+      setRawWethAmount("");
+      setQuotedToken(null);
+      setErrorMsg("");
+      resetWrite();
+      resetApprove();
     }
-  }, [isOpen, resetWrite])
+  }, [isOpen, resetWrite, resetApprove]);
 
   // Bloquear scroll del body mientras el modal está abierto
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden"
+      document.body.style.overflow = "hidden";
       return () => {
-        document.body.style.overflow = ""
-      }
+        document.body.style.overflow = "";
+      };
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   // Cerrar con tecla Escape
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
-    }
-    window.addEventListener("keydown", handleKey)
-    return () => window.removeEventListener("keydown", handleKey)
-  }, [isOpen, onClose])
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isOpen, onClose]);
 
   // Invalidar todas las queries tras éxito + cerrar modal
   useEffect(() => {
-    if (!isSuccess) return
+    if (!isSuccess) return;
 
     // Refresca todo simultáneamente: TVL, posición, share price, allocations, harvests
-    queryClient.invalidateQueries()
+    queryClient.invalidateQueries();
 
-    const timer = setTimeout(() => onClose(), 2_000)
-    return () => clearTimeout(timer)
-  }, [isSuccess, queryClient, onClose])
+    const timer = setTimeout(() => onClose(), 2_000);
+    return () => clearTimeout(timer);
+  }, [isSuccess, queryClient, onClose]);
+
+  // Aprobación de shares confirmada → disparar retiro automáticamente
+  useEffect(() => {
+    if (!isApproveSuccess || !userAddress) return;
+
+    if (outputToken.symbol === "ETH") {
+      writeContract({
+        address: routerAddress,
+        abi: routerAbi,
+        functionName: "zapWithdrawETH",
+        args: [sharesNeeded],
+      });
+    } else {
+      writeContract({
+        address: routerAddress,
+        abi: routerAbi,
+        functionName: "zapWithdrawERC20",
+        args: [
+          sharesNeeded,
+          outputToken.address as Address,
+          outputToken.poolFee as number,
+          minTokenOut,
+        ],
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isApproveSuccess]); // el usuario no puede editar durante el flujo — captura estable
 
   // ── Acción principal ─────────────────────────────────────────────────────
   const handleAction = useCallback(() => {
     if (!isConnected) {
-      const injected = connectors[0]
-      if (injected) connect({ connector: injected })
-      return
+      const injected = connectors[0];
+      if (injected) connect({ connector: injected });
+      return;
     }
-    if (!userAddress || sharesNeeded === 0n) return
+    if (!userAddress || sharesNeeded === 0n) return;
 
-    setErrorMsg("")
+    setErrorMsg("");
 
     try {
       if (outputToken.symbol === "WETH") {
@@ -265,19 +312,19 @@ export default function WithdrawModal({
           abi: vaultAbi,
           functionName: "redeem",
           args: [sharesNeeded, userAddress, userAddress],
-        })
-        return
+        });
+        return;
       }
 
       if (needsShareApproval) {
-        // Approve de shares al router
-        writeContract({
+        // Paso 1 del flujo: aprobar shares al router
+        writeApprove({
           address: vaultAddress,
           abi: erc20Abi,
           functionName: "approve",
           args: [routerAddress, sharesNeeded],
-        })
-        return
+        });
+        return;
       }
 
       if (outputToken.symbol === "ETH") {
@@ -287,8 +334,8 @@ export default function WithdrawModal({
           abi: routerAbi,
           functionName: "zapWithdrawETH",
           args: [sharesNeeded],
-        })
-        return
+        });
+        return;
       }
 
       // Caso 3: ERC20 → zapWithdrawERC20 con slippage
@@ -302,9 +349,9 @@ export default function WithdrawModal({
           outputToken.poolFee as number,
           minTokenOut,
         ],
-      })
+      });
     } catch {
-      setErrorMsg("Transaction failed. Please try again.")
+      setErrorMsg("Transaction failed. Please try again.");
     }
   }, [
     isConnected,
@@ -318,34 +365,39 @@ export default function WithdrawModal({
     routerAddress,
     minTokenOut,
     writeContract,
-  ])
+    writeApprove,
+  ]);
 
-  // ── Label del botón ──────────────────────────────────────────────────────
+  // ── Label del botón según estado ─────────────────────────────────────────
   function getButtonLabel(): string {
-    if (!isConnected) return "CONNECT WALLET"
-    if (isSuccess) return "WITHDRAW CONFIRMED ✓"
-    if (isPending) return "CONFIRMING..."
-    if (isConfirming) return "WITHDRAWING..."
-    if (sharesNeeded === 0n && parsedWethAmount === 0n) return "ENTER AMOUNT"
-    if (needsShareApproval) return "APPROVE VAULT SHARES"
-    return "WITHDRAW →"
+    if (!isConnected) return "CONNECT WALLET";
+    if (isSuccess) return "WITHDRAW CONFIRMED ✓";
+    if (isPending || isConfirming || isApproveSuccess) return "WITHDRAWING...";
+    if (isApprovePending || isApproveConfirming) return "APPROVING...";
+    if (sharesNeeded === 0n && parsedWethAmount === 0n) return "ENTER AMOUNT";
+    if (needsShareApproval) return "APPROVE VAULT SHARES";
+    return "WITHDRAW →";
   }
 
   function getButtonColor(): string {
-    if (isSuccess) return "var(--green)"
-    if (!isConnected || isPending || isConfirming || sharesNeeded === 0n)
-      return "var(--muted)"
-    return "var(--gold)"
+    if (isSuccess) return "var(--green)";
+    if (isPending || isConfirming || isApproveSuccess) return "var(--muted)";
+    if (isApprovePending || isApproveConfirming) return "var(--muted)";
+    if (!isConnected || sharesNeeded === 0n) return "var(--muted)";
+    return "var(--gold)";
   }
 
   function getButtonBorder(): string {
-    if (isSuccess) return "1px solid var(--green)"
-    if (!isConnected || isPending || isConfirming || sharesNeeded === 0n)
-      return "1px solid var(--border)"
-    return "1px solid var(--gold)"
+    if (isSuccess) return "1px solid var(--green)";
+    if (isPending || isConfirming || isApproveSuccess)
+      return "1px solid var(--border)";
+    if (isApprovePending || isApproveConfirming)
+      return "1px solid var(--border)";
+    if (!isConnected || sharesNeeded === 0n) return "1px solid var(--border)";
+    return "1px solid var(--gold)";
   }
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return createPortal(
     // Overlay exterior
@@ -422,9 +474,7 @@ export default function WithdrawModal({
               transition: "color 0.15s ease",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color = "var(--muted)")
-            }
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
           >
             ×
           </button>
@@ -459,7 +509,9 @@ export default function WithdrawModal({
                 (e.currentTarget.style.borderColor = "var(--border)")
               }
             >
-              <span>{outputToken.symbol} — {outputToken.name}</span>
+              <span>
+                {outputToken.symbol} — {outputToken.name}
+              </span>
               <span style={{ color: "var(--muted)" }}>▾</span>
             </button>
 
@@ -476,13 +528,13 @@ export default function WithdrawModal({
                 }}
               >
                 {SUPPORTED_TOKENS.map((token) => {
-                  const isSelected = token.symbol === outputToken.symbol
+                  const isSelected = token.symbol === outputToken.symbol;
                   return (
                     <button
                       key={token.symbol}
                       onClick={() => {
-                        setOutputToken(token as TokenConfig)
-                        setTokenDropdownOpen(false)
+                        setOutputToken(token as TokenConfig);
+                        setTokenDropdownOpen(false);
                       }}
                       style={{
                         width: "100%",
@@ -532,7 +584,7 @@ export default function WithdrawModal({
                         {token.name}
                       </span>
                     </button>
-                  )
+                  );
                 })}
               </div>
             )}
@@ -610,7 +662,9 @@ export default function WithdrawModal({
               {quoterLoading ? (
                 <span style={{ color: "var(--muted)" }}>Calculating...</span>
               ) : quoterError ? (
-                <span style={{ color: "var(--muted)" }}>Unable to estimate</span>
+                <span style={{ color: "var(--muted)" }}>
+                  Unable to estimate
+                </span>
               ) : quotedToken ? (
                 `~${parseFloat(formatUnits(quotedToken, outputToken.decimals)).toFixed(2)} ${outputToken.symbol}`
               ) : (
@@ -626,13 +680,13 @@ export default function WithdrawModal({
             <label style={labelStyle}>Slippage</label>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {([0.1, 0.5, 1.0] as const).map((s) => {
-                const isActive = !customSlippage && slippage === s
+                const isActive = !customSlippage && slippage === s;
                 return (
                   <button
                     key={s}
                     onClick={() => {
-                      setSlippage(s)
-                      setCustomSlippage("")
+                      setSlippage(s);
+                      setCustomSlippage("");
                     }}
                     style={{
                       ...monoStyle,
@@ -650,7 +704,7 @@ export default function WithdrawModal({
                   >
                     {s}%
                   </button>
-                )
+                );
               })}
               <input
                 type="number"
@@ -728,7 +782,13 @@ export default function WithdrawModal({
         {/* ── Botón principal ── */}
         <button
           onClick={handleAction}
-          disabled={isPending || isConfirming || isSuccess}
+          disabled={
+            isApprovePending ||
+            isApproveConfirming ||
+            isPending ||
+            isConfirming ||
+            isSuccess
+          }
           style={{
             width: "100%",
             ...monoStyle,
@@ -740,16 +800,34 @@ export default function WithdrawModal({
             border: getButtonBorder(),
             color: getButtonColor(),
             cursor:
-              isPending || isConfirming || isSuccess ? "not-allowed" : "pointer",
+              isApprovePending ||
+              isApproveConfirming ||
+              isPending ||
+              isConfirming ||
+              isSuccess
+                ? "not-allowed"
+                : "pointer",
             transition: "opacity 0.15s ease",
-            opacity: isPending || isConfirming ? 0.7 : 1,
+            opacity:
+              isApprovePending ||
+              isApproveConfirming ||
+              isPending ||
+              isConfirming
+                ? 0.7
+                : 1,
           }}
           onMouseEnter={(e) => {
-            if (!isPending && !isConfirming && !isSuccess)
-              e.currentTarget.style.opacity = "0.8"
+            if (
+              !isApprovePending &&
+              !isApproveConfirming &&
+              !isPending &&
+              !isConfirming &&
+              !isSuccess
+            )
+              e.currentTarget.style.opacity = "0.8";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.opacity = "1"
+            e.currentTarget.style.opacity = "1";
           }}
         >
           {getButtonLabel()}
@@ -792,9 +870,7 @@ export default function WithdrawModal({
               transition: "color 0.15s ease",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color = "var(--muted)")
-            }
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
           >
             contract
           </a>
@@ -802,5 +878,5 @@ export default function WithdrawModal({
       </div>
     </div>,
     document.body,
-  )
+  );
 }

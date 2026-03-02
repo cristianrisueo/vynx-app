@@ -148,46 +148,58 @@ export default function DepositModal({
     parsedAmount > 0n &&
     allowance < parsedAmount;
 
-  // ── Quoter de Uniswap V3 (solo para ERC20) ───────────────────────────────
+  // ── Quoter de Uniswap V3: función reutilizable ──────────────────────────
+  // Llama al Quoter V2 y devuelve amountOut (WETH) o null si falla
+  const fetchQuote = useCallback(
+    async (token: TokenConfig, amountIn: bigint): Promise<bigint | null> => {
+      if (!publicClient || token.poolFee === null || !token.address)
+        return null;
+      try {
+        const { result } = await publicClient.simulateContract({
+          address: QUOTER_V2_ADDRESS as Address,
+          abi: quoterAbi,
+          functionName: "quoteExactInputSingle",
+          args: [
+            {
+              tokenIn: token.address as Address,
+              tokenOut: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" as Address,
+              amountIn,
+              fee: token.poolFee as number,
+              sqrtPriceLimitX96: 0n,
+            },
+          ],
+        });
+        return (result as readonly [bigint, bigint, number, bigint])[0];
+      } catch {
+        return null;
+      }
+    },
+    [publicClient],
+  );
+
+  // Cotización reactiva cuando el usuario edita el amount o cambia de token
   useEffect(() => {
     if (!needsSwap || !debouncedAmount || parseFloat(debouncedAmount) <= 0) {
       setQuotedWeth(null);
       setQuoterError(false);
       return;
     }
-    if (!publicClient) return;
 
     const amountIn = parseUnits(debouncedAmount, selectedToken.decimals);
     setQuoterLoading(true);
     setQuoterError(false);
 
-    // Usar simulateContract porque quoteExactInputSingle es nonpayable, no view
-    publicClient
-      .simulateContract({
-        address: QUOTER_V2_ADDRESS as Address,
-        abi: quoterAbi,
-        functionName: "quoteExactInputSingle",
-        args: [
-          {
-            tokenIn: selectedToken.address as Address,
-            tokenOut: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" as Address,
-            amountIn,
-            fee: selectedToken.poolFee as number,
-            sqrtPriceLimitX96: 0n,
-          },
-        ],
-      })
-      .then(({ result }) => {
-        // amountOut es el primer elemento del tuple de retorno
-        setQuotedWeth((result as readonly [bigint, bigint, number, bigint])[0]);
+    fetchQuote(selectedToken, amountIn).then((wethOut) => {
+      if (wethOut !== null) {
+        setQuotedWeth(wethOut);
         setQuoterLoading(false);
-      })
-      .catch(() => {
+      } else {
         setQuotedWeth(null);
         setQuoterLoading(false);
         setQuoterError(true);
-      });
-  }, [debouncedAmount, selectedToken, needsSwap, publicClient]);
+      }
+    });
+  }, [debouncedAmount, selectedToken, needsSwap, fetchQuote]);
 
   // Slippage efectivo (custom si está definido, sino el seleccionado)
   const effectiveSlippage = customSlippage
@@ -208,7 +220,7 @@ export default function DepositModal({
       ? parsedAmount
       : (quotedWeth ?? 0n);
 
-  // ── Escritura: write + confirmación ─────────────────────────────────────
+  // ── Escritura: depósito principal ───────────────────────────────────────
   const {
     writeContract,
     data: txHash,
@@ -220,12 +232,25 @@ export default function DepositModal({
     hash: txHash,
   });
 
-  // Reset del estado al cambiar de token o cerrar
+  // ── Escritura: aprobación ERC20 (par independiente) ──────────────────────
+  const {
+    writeContract: writeApprove,
+    data: approveTxHash,
+    isPending: isApprovePending,
+    reset: resetApprove,
+  } = useWriteContract();
+
+  const { isLoading: isApproveConfirming, isSuccess: isApproveSuccess } =
+    useWaitForTransactionReceipt({ hash: approveTxHash });
+
+  // Reset del estado al cambiar de token
   useEffect(() => {
     setQuotedWeth(null);
     setQuoterError(false);
     setErrorMsg("");
-  }, [selectedToken]);
+    resetWrite();
+    resetApprove();
+  }, [selectedToken, resetWrite, resetApprove]);
 
   // Limpiar estado al cerrar
   useEffect(() => {
@@ -234,8 +259,9 @@ export default function DepositModal({
       setQuotedWeth(null);
       setErrorMsg("");
       resetWrite();
+      resetApprove();
     }
-  }, [isOpen, resetWrite]);
+  }, [isOpen, resetWrite, resetApprove]);
 
   // Bloquear scroll del body mientras el modal está abierto
   useEffect(() => {
@@ -256,6 +282,53 @@ export default function DepositModal({
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
+
+  // Aprobación confirmada → re-cotizar y disparar depósito
+  useEffect(() => {
+    if (!isApproveSuccess || !userAddress) return;
+
+    // WETH no necesita swap — depositar directamente
+    if (selectedToken.symbol === "WETH") {
+      writeContract({
+        address: vaultAddress,
+        abi: vaultAbi,
+        functionName: "deposit",
+        args: [parsedAmount, userAddress],
+      });
+      return;
+    }
+
+    // ERC20 con swap — obtener cotización fresca del Quoter antes de depositar
+    const freshDeposit = async () => {
+      const freshQuote = await fetchQuote(selectedToken, parsedAmount);
+
+      // Calcular minWethOut fresco con el slippage actual
+      const freshMinWethOut =
+        freshQuote && effectiveSlippage > 0
+          ? (freshQuote *
+              BigInt(Math.round((1 - effectiveSlippage / 100) * 10_000))) /
+            10_000n
+          : 0n;
+
+      // Actualizar UI con la cotización fresca
+      if (freshQuote !== null) setQuotedWeth(freshQuote);
+
+      writeContract({
+        address: routerAddress,
+        abi: routerAbi,
+        functionName: "zapDepositERC20",
+        args: [
+          selectedToken.address as Address,
+          parsedAmount,
+          selectedToken.poolFee as number,
+          freshMinWethOut,
+        ],
+      });
+    };
+
+    freshDeposit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isApproveSuccess]);
 
   // Invalidar todas las queries tras éxito + cerrar modal
   useEffect(() => {
@@ -293,8 +366,8 @@ export default function DepositModal({
       }
 
       if (needsApproval) {
-        // Approve al spender correspondiente
-        writeContract({
+        // Paso 1 del flujo ERC20: aprobar gasto al spender
+        writeApprove({
           address: selectedToken.address as Address,
           abi: erc20Abi,
           functionName: "approve",
@@ -342,6 +415,7 @@ export default function DepositModal({
     routerAddress,
     minWethOut,
     writeContract,
+    writeApprove,
   ]);
 
   // Cerrar al hacer click en el overlay
@@ -351,22 +425,27 @@ export default function DepositModal({
   function getButtonLabel(): string {
     if (!isConnected) return "CONNECT WALLET";
     if (isSuccess) return "DEPOSIT CONFIRMED ✓";
-    if (isPending) return "CONFIRMING...";
-    if (isConfirming) return "DEPOSITING...";
+    if (isPending || isConfirming || isApproveSuccess) return "DEPOSITING...";
+    if (isApprovePending || isApproveConfirming) return "APPROVING...";
     if (needsApproval) return `APPROVE ${selectedToken.symbol}`;
     return "DEPOSIT";
   }
 
   function getButtonColor(): string {
     if (isSuccess) return "var(--green)";
-    if (!isConnected || isPending || isConfirming) return "var(--muted)";
+    if (isPending || isConfirming || isApproveSuccess) return "var(--muted)";
+    if (isApprovePending || isApproveConfirming) return "var(--muted)";
+    if (!isConnected) return "var(--muted)";
     return "var(--gold)";
   }
 
   function getButtonBorder(): string {
     if (isSuccess) return "1px solid var(--green)";
-    if (!isConnected || isPending || isConfirming)
+    if (isPending || isConfirming || isApproveSuccess)
       return "1px solid var(--border)";
+    if (isApprovePending || isApproveConfirming)
+      return "1px solid var(--border)";
+    if (!isConnected) return "1px solid var(--border)";
     return "1px solid var(--gold)";
   }
 
@@ -759,7 +838,13 @@ export default function DepositModal({
         {/* ── Botón principal ── */}
         <button
           onClick={handleAction}
-          disabled={isPending || isConfirming || isSuccess}
+          disabled={
+            isApprovePending ||
+            isApproveConfirming ||
+            isPending ||
+            isConfirming ||
+            isSuccess
+          }
           style={{
             width: "100%",
             ...monoStyle,
@@ -771,14 +856,30 @@ export default function DepositModal({
             border: getButtonBorder(),
             color: getButtonColor(),
             cursor:
-              isPending || isConfirming || isSuccess
+              isApprovePending ||
+              isApproveConfirming ||
+              isPending ||
+              isConfirming ||
+              isSuccess
                 ? "not-allowed"
                 : "pointer",
             transition: "opacity 0.15s ease",
-            opacity: isPending || isConfirming ? 0.7 : 1,
+            opacity:
+              isApprovePending ||
+              isApproveConfirming ||
+              isPending ||
+              isConfirming
+                ? 0.7
+                : 1,
           }}
           onMouseEnter={(e) => {
-            if (!isPending && !isConfirming && !isSuccess)
+            if (
+              !isApprovePending &&
+              !isApproveConfirming &&
+              !isPending &&
+              !isConfirming &&
+              !isSuccess
+            )
               e.currentTarget.style.opacity = "0.8";
           }}
           onMouseLeave={(e) => {
