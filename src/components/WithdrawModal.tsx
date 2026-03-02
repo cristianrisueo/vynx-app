@@ -12,7 +12,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query"
 import { parseUnits, formatUnits } from "viem"
 import type { Address } from "viem"
-import { SUPPORTED_TOKENS, QUOTER_V2_ADDRESS } from "@/config/addresses"
+import { SUPPORTED_TOKENS, QUOTER_V2_ADDRESS, ADDRESSES } from "@/config/addresses"
 import type { TokenConfig } from "@/config/addresses"
 import { vaultAbi } from "@/abis/vault.abi"
 import { routerAbi } from "@/abis/router.abi"
@@ -244,6 +244,16 @@ export default function WithdrawModal({
         JSON.stringify(q.queryKey).toLowerCase().includes(vaultAddress.toLowerCase()),
     })
     queryClient.invalidateQueries({ queryKey: ["harvests"] })
+    // Invalidar TVL de ambos vaults (useReadContracts en useVault)
+    queryClient.invalidateQueries({
+      predicate: (q) => {
+        const key = JSON.stringify(q.queryKey).toLowerCase()
+        return (
+          key.includes(ADDRESSES.balanced.vault.toLowerCase()) ||
+          key.includes(ADDRESSES.aggressive.vault.toLowerCase())
+        )
+      },
+    })
     refetchSharesAllowance()
 
     const timer = setTimeout(() => onClose(), 2_000)

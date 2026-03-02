@@ -7,9 +7,9 @@ import Skeleton from "./Skeleton"
 // TODO: multiplicar por precio ETH/USD cuando se añada oracle de precio
 function formatEth(value: number): string {
   if (value >= 1_000) {
-    return `${(value / 1_000).toFixed(1)}K ETH`
+    return `${(value / 1_000).toFixed(3)}K ETH`
   }
-  return `${value.toFixed(1)} ETH`
+  return `${value.toFixed(3)} ETH`
 }
 
 export default function MetricsStrip() {
