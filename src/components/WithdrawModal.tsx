@@ -20,6 +20,17 @@ import { erc20Abi } from "@/abis/erc20.abi";
 import { quoterAbi } from "@/abis/quoter.abi";
 import { useVault } from "@/hooks/useVault";
 
+// ── Utilidad: parsear errores de wagmi para mostrar al usuario ───────────────
+function parseError(err: Error): string {
+  const msg = err.message ?? "";
+  if (
+    msg.toLowerCase().includes("user rejected") ||
+    msg.toLowerCase().includes("denied")
+  )
+    return "Transaction rejected.";
+  return "Transaction failed. Check console for details.";
+}
+
 // ── Utilidad: debounce genérico ──────────────────────────────────────────────
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -193,10 +204,11 @@ export default function WithdrawModal({
     writeContract,
     data: txHash,
     isPending,
+    error: writeError,
     reset: resetWrite,
   } = useWriteContract();
 
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+  const { isLoading: isConfirming, isSuccess, error: receiptError } = useWaitForTransactionReceipt({
     hash: txHash,
   });
 
@@ -205,11 +217,41 @@ export default function WithdrawModal({
     writeContract: writeApprove,
     data: approveTxHash,
     isPending: isApprovePending,
+    error: approveWriteError,
     reset: resetApprove,
   } = useWriteContract();
 
-  const { isLoading: isApproveConfirming, isSuccess: isApproveSuccess } =
+  const { isLoading: isApproveConfirming, isSuccess: isApproveSuccess, error: approveReceiptError } =
     useWaitForTransactionReceipt({ hash: approveTxHash });
+
+  // Surfacing de errores al usuario
+  useEffect(() => {
+    if (approveWriteError) {
+      console.error("[Withdraw] Approve wallet error:", approveWriteError);
+      setErrorMsg(parseError(approveWriteError));
+    }
+  }, [approveWriteError]);
+
+  useEffect(() => {
+    if (approveReceiptError) {
+      console.error("[Withdraw] Approve receipt error:", approveReceiptError);
+      setErrorMsg(parseError(approveReceiptError));
+    }
+  }, [approveReceiptError]);
+
+  useEffect(() => {
+    if (writeError) {
+      console.error("[Withdraw] Withdraw wallet error:", writeError);
+      setErrorMsg(parseError(writeError));
+    }
+  }, [writeError]);
+
+  useEffect(() => {
+    if (receiptError) {
+      console.error("[Withdraw] Withdraw receipt error:", receiptError);
+      setErrorMsg(parseError(receiptError));
+    }
+  }, [receiptError]);
 
   // Reset al cambiar token de salida
   useEffect(() => {

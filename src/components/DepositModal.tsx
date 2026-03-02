@@ -20,6 +20,17 @@ import { routerAbi } from "@/abis/router.abi";
 import { erc20Abi } from "@/abis/erc20.abi";
 import { quoterAbi } from "@/abis/quoter.abi";
 
+// ── Utilidad: parsear errores de wagmi para mostrar al usuario ───────────────
+function parseError(err: Error): string {
+  const msg = err.message ?? "";
+  if (
+    msg.toLowerCase().includes("user rejected") ||
+    msg.toLowerCase().includes("denied")
+  )
+    return "Transaction rejected.";
+  return "Transaction failed. Check console for details.";
+}
+
 // ── Utilidad: debounce genérico ──────────────────────────────────────────────
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -246,23 +257,32 @@ export default function DepositModal({
     error: approveReceiptError,
   } = useWaitForTransactionReceipt({ hash: approveTxHash });
 
-  // Logging de errores para diagnóstico
+  // Surfacing de errores al usuario
   useEffect(() => {
-    if (approveWriteError) console.error("[Deposit] Approve wallet error:", approveWriteError);
+    if (approveWriteError) {
+      console.error("[Deposit] Approve wallet error:", approveWriteError);
+      setErrorMsg(parseError(approveWriteError));
+    }
   }, [approveWriteError]);
 
   useEffect(() => {
-    if (approveReceiptError) console.error("[Deposit] Approve receipt error:", approveReceiptError);
+    if (approveReceiptError) {
+      console.error("[Deposit] Approve receipt error:", approveReceiptError);
+      setErrorMsg(parseError(approveReceiptError));
+    }
   }, [approveReceiptError]);
 
   useEffect(() => {
-    if (writeError) console.error("[Deposit] Deposit wallet error:", writeError);
+    if (writeError) {
+      console.error("[Deposit] Deposit wallet error:", writeError);
+      setErrorMsg(parseError(writeError));
+    }
   }, [writeError]);
 
   useEffect(() => {
     if (receiptError) {
       console.error("[Deposit] Deposit receipt error:", receiptError);
-      setErrorMsg(receiptError.message ?? "Transaction reverted. Check console for details.");
+      setErrorMsg(parseError(receiptError));
     }
   }, [receiptError]);
 
