@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react"
-import { createPortal } from "react-dom"
+import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   useAccount,
   useConnect,
@@ -9,34 +9,34 @@ import {
   useWaitForTransactionReceipt,
   usePublicClient,
   useBalance,
-} from "wagmi"
-import { useQueryClient } from "@tanstack/react-query"
-import { parseUnits, formatUnits } from "viem"
-import type { Address } from "viem"
-import { SUPPORTED_TOKENS, QUOTER_V2_ADDRESS, ADDRESSES } from "@/config/addresses"
-import type { TokenConfig } from "@/config/addresses"
-import { vaultAbi } from "@/abis/vault.abi"
-import { routerAbi } from "@/abis/router.abi"
-import { erc20Abi } from "@/abis/erc20.abi"
-import { quoterAbi } from "@/abis/quoter.abi"
+} from "wagmi";
+import { useQueryClient } from "@tanstack/react-query";
+import { parseUnits, formatUnits } from "viem";
+import type { Address } from "viem";
+import { SUPPORTED_TOKENS, QUOTER_V2_ADDRESS } from "@/config/addresses";
+import type { TokenConfig } from "@/config/addresses";
+import { vaultAbi } from "@/abis/vault.abi";
+import { routerAbi } from "@/abis/router.abi";
+import { erc20Abi } from "@/abis/erc20.abi";
+import { quoterAbi } from "@/abis/quoter.abi";
 
 // ── Utilidad: debounce genérico ──────────────────────────────────────────────
 function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value)
+  const [debounced, setDebounced] = useState(value);
   useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(t)
-  }, [value, delay])
-  return debounced
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
 }
 
 // ── Props ────────────────────────────────────────────────────────────────────
 interface DepositModalProps {
-  isOpen: boolean
-  onClose: () => void
-  vaultAddress: Address
-  routerAddress: Address
-  vaultName: string
+  isOpen: boolean;
+  onClose: () => void;
+  vaultAddress: Address;
+  routerAddress: Address;
+  vaultName: string;
 }
 
 // ── Estilos compartidos ──────────────────────────────────────────────────────
@@ -48,16 +48,16 @@ const labelStyle: React.CSSProperties = {
   color: "var(--muted)",
   marginBottom: 8,
   display: "block",
-}
+};
 
 const monoStyle: React.CSSProperties = {
   fontFamily: "'DM Mono', monospace",
-}
+};
 
 const separatorStyle: React.CSSProperties = {
   borderTop: "1px solid var(--border)",
   margin: "20px 0",
-}
+};
 
 // ── Componente principal ─────────────────────────────────────────────────────
 export default function DepositModal({
@@ -67,37 +67,39 @@ export default function DepositModal({
   routerAddress,
   vaultName,
 }: DepositModalProps) {
-  const { address: userAddress, isConnected } = useAccount()
-  const { connect } = useConnect()
-  const connectors = useConnectors()
-  const publicClient = usePublicClient()
-  const queryClient = useQueryClient()
+  const { address: userAddress, isConnected } = useAccount();
+  const { connect } = useConnect();
+  const connectors = useConnectors();
+  const publicClient = usePublicClient();
+  const queryClient = useQueryClient();
 
   // Estado del modal
-  const [selectedToken, setSelectedToken] = useState<TokenConfig>(SUPPORTED_TOKENS[0])
-  const [rawAmount, setRawAmount] = useState("")
-  const [slippage, setSlippage] = useState<0.1 | 0.5 | 1.0>(0.5)
-  const [customSlippage, setCustomSlippage] = useState("")
-  const [tokenDropdownOpen, setTokenDropdownOpen] = useState(false)
-  const [quotedWeth, setQuotedWeth] = useState<bigint | null>(null)
-  const [quoterLoading, setQuoterLoading] = useState(false)
-  const [quoterError, setQuoterError] = useState(false)
-  const [errorMsg, setErrorMsg] = useState("")
+  const [selectedToken, setSelectedToken] = useState<TokenConfig>(
+    SUPPORTED_TOKENS[0],
+  );
+  const [rawAmount, setRawAmount] = useState("");
+  const [slippage, setSlippage] = useState<0.1 | 0.5 | 1.0>(0.5);
+  const [customSlippage, setCustomSlippage] = useState("");
+  const [tokenDropdownOpen, setTokenDropdownOpen] = useState(false);
+  const [quotedWeth, setQuotedWeth] = useState<bigint | null>(null);
+  const [quoterLoading, setQuoterLoading] = useState(false);
+  const [quoterError, setQuoterError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const debouncedAmount = useDebounce(rawAmount, 500)
+  const debouncedAmount = useDebounce(rawAmount, 500);
 
   // Indica si el token requiere swap (no es ETH ni WETH)
-  const needsSwap = selectedToken.poolFee !== null
+  const needsSwap = selectedToken.poolFee !== null;
 
   // Spender: vault para WETH directo, router para ERC20
   const spender =
-    selectedToken.symbol === "WETH" ? vaultAddress : routerAddress
+    selectedToken.symbol === "WETH" ? vaultAddress : routerAddress;
 
   // ── Lectura: balance del token seleccionado ──────────────────────────────
   const { data: ethBalanceData } = useBalance({
     address: userAddress,
     query: { enabled: !!userAddress && selectedToken.symbol === "ETH" },
-  })
+  });
 
   const { data: erc20Balance } = useReadContract({
     address: selectedToken.address ?? "0x",
@@ -107,7 +109,7 @@ export default function DepositModal({
     query: {
       enabled: !!userAddress && selectedToken.symbol !== "ETH",
     },
-  })
+  });
 
   // Balance del token formateado
   const userBalance =
@@ -117,10 +119,10 @@ export default function DepositModal({
         : "0"
       : erc20Balance !== undefined
         ? formatUnits(erc20Balance as bigint, selectedToken.decimals)
-        : "0"
+        : "0";
 
   // ── Lectura: allowance actual ────────────────────────────────────────────
-  const { data: allowanceData, refetch: refetchAllowance } = useReadContract({
+  const { data: allowanceData } = useReadContract({
     address: selectedToken.address ?? "0x",
     abi: erc20Abi,
     functionName: "allowance",
@@ -131,31 +133,33 @@ export default function DepositModal({
     query: {
       enabled: !!userAddress && selectedToken.symbol !== "ETH",
     },
-  })
+  });
 
-  const allowance = (allowanceData as bigint | undefined) ?? 0n
+  const allowance = (allowanceData as bigint | undefined) ?? 0n;
 
   // Amount parseado a bigint según decimales del token
   const parsedAmount =
     rawAmount && !isNaN(parseFloat(rawAmount)) && parseFloat(rawAmount) > 0
       ? parseUnits(rawAmount, selectedToken.decimals)
-      : 0n
+      : 0n;
 
   const needsApproval =
-    selectedToken.symbol !== "ETH" && parsedAmount > 0n && allowance < parsedAmount
+    selectedToken.symbol !== "ETH" &&
+    parsedAmount > 0n &&
+    allowance < parsedAmount;
 
   // ── Quoter de Uniswap V3 (solo para ERC20) ───────────────────────────────
   useEffect(() => {
     if (!needsSwap || !debouncedAmount || parseFloat(debouncedAmount) <= 0) {
-      setQuotedWeth(null)
-      setQuoterError(false)
-      return
+      setQuotedWeth(null);
+      setQuoterError(false);
+      return;
     }
-    if (!publicClient) return
+    if (!publicClient) return;
 
-    const amountIn = parseUnits(debouncedAmount, selectedToken.decimals)
-    setQuoterLoading(true)
-    setQuoterError(false)
+    const amountIn = parseUnits(debouncedAmount, selectedToken.decimals);
+    setQuoterLoading(true);
+    setQuoterError(false);
 
     // Usar simulateContract porque quoteExactInputSingle es nonpayable, no view
     publicClient
@@ -175,33 +179,34 @@ export default function DepositModal({
       })
       .then(({ result }) => {
         // amountOut es el primer elemento del tuple de retorno
-        setQuotedWeth((result as readonly [bigint, bigint, number, bigint])[0])
-        setQuoterLoading(false)
+        setQuotedWeth((result as readonly [bigint, bigint, number, bigint])[0]);
+        setQuoterLoading(false);
       })
       .catch(() => {
-        setQuotedWeth(null)
-        setQuoterLoading(false)
-        setQuoterError(true)
-      })
-  }, [debouncedAmount, selectedToken, needsSwap, publicClient])
+        setQuotedWeth(null);
+        setQuoterLoading(false);
+        setQuoterError(true);
+      });
+  }, [debouncedAmount, selectedToken, needsSwap, publicClient]);
 
   // Slippage efectivo (custom si está definido, sino el seleccionado)
   const effectiveSlippage = customSlippage
     ? parseFloat(customSlippage)
-    : slippage
+    : slippage;
 
   // Min WETH out con slippage aplicado
   const minWethOut =
     quotedWeth && effectiveSlippage > 0
-      ? (quotedWeth * BigInt(Math.round((1 - effectiveSlippage / 100) * 10_000))) /
+      ? (quotedWeth *
+          BigInt(Math.round((1 - effectiveSlippage / 100) * 10_000))) /
         10_000n
-      : 0n
+      : 0n;
 
   // Shares estimadas que recibirá el usuario (para el resumen)
   const estimatedShares =
     selectedToken.symbol === "ETH" || selectedToken.symbol === "WETH"
       ? parsedAmount
-      : quotedWeth ?? 0n
+      : (quotedWeth ?? 0n);
 
   // ── Escritura: write + confirmación ─────────────────────────────────────
   const {
@@ -209,85 +214,71 @@ export default function DepositModal({
     data: txHash,
     isPending,
     reset: resetWrite,
-  } = useWriteContract()
+  } = useWriteContract();
 
-  const { isLoading: isConfirming, isSuccess } =
-    useWaitForTransactionReceipt({ hash: txHash })
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
 
   // Reset del estado al cambiar de token o cerrar
   useEffect(() => {
-    setQuotedWeth(null)
-    setQuoterError(false)
-    setErrorMsg("")
-  }, [selectedToken])
+    setQuotedWeth(null);
+    setQuoterError(false);
+    setErrorMsg("");
+  }, [selectedToken]);
 
   // Limpiar estado al cerrar
   useEffect(() => {
     if (!isOpen) {
-      setRawAmount("")
-      setQuotedWeth(null)
-      setErrorMsg("")
-      resetWrite()
+      setRawAmount("");
+      setQuotedWeth(null);
+      setErrorMsg("");
+      resetWrite();
     }
-  }, [isOpen, resetWrite])
+  }, [isOpen, resetWrite]);
 
   // Bloquear scroll del body mientras el modal está abierto
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden"
+      document.body.style.overflow = "hidden";
       return () => {
-        document.body.style.overflow = ""
-      }
+        document.body.style.overflow = "";
+      };
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   // Cerrar con tecla Escape
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
-    }
-    window.addEventListener("keydown", handleKey)
-    return () => window.removeEventListener("keydown", handleKey)
-  }, [isOpen, onClose])
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isOpen, onClose]);
 
-  // Invalidar cache e invalidar queries tras éxito + cerrar modal
+  // Invalidar todas las queries tras éxito + cerrar modal
   useEffect(() => {
-    if (!isSuccess) return
+    if (!isSuccess) return;
 
-    // Invalidar lecturas del vault afectado
-    queryClient.invalidateQueries({
-      predicate: (q) =>
-        JSON.stringify(q.queryKey).toLowerCase().includes(vaultAddress.toLowerCase()),
-    })
-    queryClient.invalidateQueries({ queryKey: ["harvests"] })
-    // Invalidar TVL de ambos vaults (useReadContracts en useVault)
-    queryClient.invalidateQueries({
-      predicate: (q) => {
-        const key = JSON.stringify(q.queryKey).toLowerCase()
-        return (
-          key.includes(ADDRESSES.balanced.vault.toLowerCase()) ||
-          key.includes(ADDRESSES.aggressive.vault.toLowerCase())
-        )
-      },
-    })
-    refetchAllowance()
+    // Refresca todo simultáneamente: TVL, posición, share price, allocations, harvests
+    queryClient.invalidateQueries();
 
     // Cerrar modal tras 2 segundos
-    const timer = setTimeout(() => onClose(), 2_000)
-    return () => clearTimeout(timer)
-  }, [isSuccess, queryClient, vaultAddress, onClose, refetchAllowance])
+    const timer = setTimeout(() => onClose(), 2_000);
+    return () => clearTimeout(timer);
+  }, [isSuccess, queryClient, onClose]);
 
   // ── Acción principal ─────────────────────────────────────────────────────
   const handleAction = useCallback(() => {
     if (!isConnected) {
-      const injected = connectors[0]
-      if (injected) connect({ connector: injected })
-      return
+      const injected = connectors[0];
+      if (injected) connect({ connector: injected });
+      return;
     }
-    if (!userAddress || parsedAmount === 0n) return
+    if (!userAddress || parsedAmount === 0n) return;
 
-    setErrorMsg("")
+    setErrorMsg("");
 
     try {
       if (selectedToken.symbol === "ETH") {
@@ -297,8 +288,8 @@ export default function DepositModal({
           abi: routerAbi,
           functionName: "zapDepositETH",
           value: parsedAmount,
-        })
-        return
+        });
+        return;
       }
 
       if (needsApproval) {
@@ -308,8 +299,8 @@ export default function DepositModal({
           abi: erc20Abi,
           functionName: "approve",
           args: [spender, parsedAmount],
-        })
-        return
+        });
+        return;
       }
 
       if (selectedToken.symbol === "WETH") {
@@ -319,8 +310,8 @@ export default function DepositModal({
           abi: vaultAbi,
           functionName: "deposit",
           args: [parsedAmount, userAddress],
-        })
-        return
+        });
+        return;
       }
 
       // Caso 3: ERC20 → zapDepositERC20 con slippage
@@ -334,9 +325,9 @@ export default function DepositModal({
           selectedToken.poolFee as number,
           minWethOut,
         ],
-      })
+      });
     } catch {
-      setErrorMsg("Transaction failed. Please try again.")
+      setErrorMsg("Transaction failed. Please try again.");
     }
   }, [
     isConnected,
@@ -351,35 +342,35 @@ export default function DepositModal({
     routerAddress,
     minWethOut,
     writeContract,
-  ])
+  ]);
 
   // Cerrar al hacer click en el overlay
-  const handleOverlayClick = useCallback(() => onClose(), [onClose])
+  const handleOverlayClick = useCallback(() => onClose(), [onClose]);
 
   // ── Label del botón según estado ─────────────────────────────────────────
   function getButtonLabel(): string {
-    if (!isConnected) return "CONNECT WALLET"
-    if (isSuccess) return "DEPOSIT CONFIRMED ✓"
-    if (isPending) return "CONFIRMING..."
-    if (isConfirming) return "DEPOSITING..."
-    if (needsApproval) return `APPROVE ${selectedToken.symbol}`
-    return "DEPOSIT →"
+    if (!isConnected) return "CONNECT WALLET";
+    if (isSuccess) return "DEPOSIT CONFIRMED ✓";
+    if (isPending) return "CONFIRMING...";
+    if (isConfirming) return "DEPOSITING...";
+    if (needsApproval) return `APPROVE ${selectedToken.symbol}`;
+    return "DEPOSIT";
   }
 
   function getButtonColor(): string {
-    if (isSuccess) return "var(--green)"
-    if (!isConnected || isPending || isConfirming) return "var(--muted)"
-    return "var(--gold)"
+    if (isSuccess) return "var(--green)";
+    if (!isConnected || isPending || isConfirming) return "var(--muted)";
+    return "var(--gold)";
   }
 
   function getButtonBorder(): string {
-    if (isSuccess) return "1px solid var(--green)"
+    if (isSuccess) return "1px solid var(--green)";
     if (!isConnected || isPending || isConfirming)
-      return "1px solid var(--border)"
-    return "1px solid var(--gold)"
+      return "1px solid var(--border)";
+    return "1px solid var(--gold)";
   }
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return createPortal(
     // Overlay exterior
@@ -456,9 +447,7 @@ export default function DepositModal({
               transition: "color 0.15s ease",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color = "var(--muted)")
-            }
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
           >
             ×
           </button>
@@ -493,7 +482,9 @@ export default function DepositModal({
                 (e.currentTarget.style.borderColor = "var(--border)")
               }
             >
-              <span>{selectedToken.symbol} — {selectedToken.name}</span>
+              <span>
+                {selectedToken.symbol} — {selectedToken.name}
+              </span>
               <span style={{ color: "var(--muted)" }}>▾</span>
             </button>
 
@@ -510,14 +501,14 @@ export default function DepositModal({
                 }}
               >
                 {SUPPORTED_TOKENS.map((token) => {
-                  const isSelected = token.symbol === selectedToken.symbol
+                  const isSelected = token.symbol === selectedToken.symbol;
                   return (
                     <button
                       key={token.symbol}
                       onClick={() => {
-                        setSelectedToken(token as TokenConfig)
-                        setTokenDropdownOpen(false)
-                        setRawAmount("")
+                        setSelectedToken(token as TokenConfig);
+                        setTokenDropdownOpen(false);
+                        setRawAmount("");
                       }}
                       style={{
                         width: "100%",
@@ -568,7 +559,7 @@ export default function DepositModal({
                         {token.name}
                       </span>
                     </button>
-                  )
+                  );
                 })}
               </div>
             )}
@@ -632,7 +623,7 @@ export default function DepositModal({
               marginTop: 6,
             }}
           >
-            Balance: {parseFloat(userBalance).toFixed(4)} {selectedToken.symbol}
+            Balance: {parseFloat(userBalance).toFixed(2)} {selectedToken.symbol}
           </div>
         </div>
 
@@ -644,9 +635,11 @@ export default function DepositModal({
               {quoterLoading ? (
                 <span style={{ color: "var(--muted)" }}>Calculating...</span>
               ) : quoterError ? (
-                <span style={{ color: "var(--muted)" }}>Unable to estimate</span>
+                <span style={{ color: "var(--muted)" }}>
+                  Unable to estimate
+                </span>
               ) : quotedWeth ? (
-                `~${parseFloat(formatUnits(quotedWeth, 18)).toFixed(4)} WETH`
+                `~${parseFloat(formatUnits(quotedWeth, 18)).toFixed(2)} WETH`
               ) : (
                 <span style={{ color: "var(--muted)" }}>—</span>
               )}
@@ -660,13 +653,13 @@ export default function DepositModal({
             <label style={labelStyle}>Slippage</label>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {([0.1, 0.5, 1.0] as const).map((s) => {
-                const isActive = !customSlippage && slippage === s
+                const isActive = !customSlippage && slippage === s;
                 return (
                   <button
                     key={s}
                     onClick={() => {
-                      setSlippage(s)
-                      setCustomSlippage("")
+                      setSlippage(s);
+                      setCustomSlippage("");
                     }}
                     style={{
                       ...monoStyle,
@@ -684,7 +677,7 @@ export default function DepositModal({
                   >
                     {s}%
                   </button>
-                )
+                );
               })}
               <input
                 type="number"
@@ -742,18 +735,22 @@ export default function DepositModal({
             <span style={{ ...monoStyle, fontSize: 11, color: "var(--green)" }}>
               ~
               {estimatedShares > 0n
-                ? parseFloat(formatUnits(estimatedShares, 18)).toFixed(4)
-                : "0.0000"}{" "}
+                ? parseFloat(formatUnits(estimatedShares, 18)).toFixed(2)
+                : "0.00"}{" "}
               vxWETH
             </span>
           </div>
           {needsSwap && minWethOut > 0n && (
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ ...monoStyle, fontSize: 11, color: "var(--muted)" }}>
+              <span
+                style={{ ...monoStyle, fontSize: 11, color: "var(--muted)" }}
+              >
                 Min. received
               </span>
-              <span style={{ ...monoStyle, fontSize: 11, color: "var(--muted)" }}>
-                {parseFloat(formatUnits(minWethOut, 18)).toFixed(4)} WETH
+              <span
+                style={{ ...monoStyle, fontSize: 11, color: "var(--muted)" }}
+              >
+                {parseFloat(formatUnits(minWethOut, 18)).toFixed(2)} WETH
               </span>
             </div>
           )}
@@ -774,16 +771,18 @@ export default function DepositModal({
             border: getButtonBorder(),
             color: getButtonColor(),
             cursor:
-              isPending || isConfirming || isSuccess ? "not-allowed" : "pointer",
+              isPending || isConfirming || isSuccess
+                ? "not-allowed"
+                : "pointer",
             transition: "opacity 0.15s ease",
             opacity: isPending || isConfirming ? 0.7 : 1,
           }}
           onMouseEnter={(e) => {
             if (!isPending && !isConfirming && !isSuccess)
-              e.currentTarget.style.opacity = "0.8"
+              e.currentTarget.style.opacity = "0.8";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.opacity = "1"
+            e.currentTarget.style.opacity = "1";
           }}
         >
           {getButtonLabel()}
@@ -813,28 +812,90 @@ export default function DepositModal({
             fontWeight: 300,
             fontSize: 11,
             color: "var(--muted)",
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
           }}
         >
-          Advanced users can interact directly with the{" "}
-          <a
-            href={`https://etherscan.io/address/${routerAddress}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: "var(--muted)",
-              textDecoration: "none",
-              transition: "color 0.15s ease",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color = "var(--muted)")
-            }
-          >
-            contract
-          </a>
+          <div>
+            <button
+              onClick={() => {
+                (
+                  window as unknown as {
+                    ethereum?: {
+                      request: (args: {
+                        method: string;
+                        params: {
+                          type: string;
+                          options: {
+                            address: string;
+                            symbol: string;
+                            decimals: number;
+                          };
+                        };
+                      }) => void;
+                    };
+                  }
+                ).ethereum?.request({
+                  method: "wallet_watchAsset",
+                  params: {
+                    type: "ERC20",
+                    options: {
+                      address: vaultAddress,
+                      symbol: "vxWETH",
+                      decimals: 18,
+                    },
+                  },
+                });
+              }}
+              style={{
+                color: "var(--muted)",
+                textDecoration: "none",
+                transition: "color 0.15s ease",
+                cursor: "pointer",
+                background: "none",
+                border: "none",
+                fontFamily: "'DM Sans', sans-serif",
+                fontWeight: 300,
+                fontSize: 11,
+                padding: 0,
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.color = "var(--text)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.color = "var(--muted)")
+              }
+            >
+              Add vxWETH to wallet
+            </button>
+          </div>
+          <div>Minimum deposit: 0.01 ETH equivalent</div>
+
+          <div>
+            Advanced users can interact directly with the{" "}
+            <a
+              href={`https://etherscan.io/address/${routerAddress}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: "var(--muted)",
+                textDecoration: "none",
+                transition: "color 0.15s ease",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.color = "var(--text)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.color = "var(--muted)")
+              }
+            >
+              contract
+            </a>
+          </div>
         </div>
       </div>
     </div>,
     document.body,
-  )
+  );
 }

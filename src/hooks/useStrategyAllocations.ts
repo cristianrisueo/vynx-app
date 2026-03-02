@@ -35,7 +35,6 @@ export function useStrategyAllocations(
     functionName: "getStrategies",
     query: {
       staleTime: 60_000,
-      refetchInterval: 60_000,
     },
   })
 
@@ -51,7 +50,6 @@ export function useStrategyAllocations(
     })),
     query: {
       enabled: strategy_addresses.length > 0,
-      refetchInterval: 60_000,
       staleTime: 60_000,
     },
   })

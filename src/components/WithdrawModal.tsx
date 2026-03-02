@@ -12,7 +12,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query"
 import { parseUnits, formatUnits } from "viem"
 import type { Address } from "viem"
-import { SUPPORTED_TOKENS, QUOTER_V2_ADDRESS, ADDRESSES } from "@/config/addresses"
+import { SUPPORTED_TOKENS, QUOTER_V2_ADDRESS } from "@/config/addresses"
 import type { TokenConfig } from "@/config/addresses"
 import { vaultAbi } from "@/abis/vault.abi"
 import { routerAbi } from "@/abis/router.abi"
@@ -113,7 +113,7 @@ export default function WithdrawModal({
   const sharesNeeded = (sharesNeededData as bigint | undefined) ?? 0n
 
   // ── Allowance de shares al router (para ETH y ERC20) ────────────────────
-  const { data: sharesAllowanceData, refetch: refetchSharesAllowance } =
+  const { data: sharesAllowanceData } =
     useReadContract({
       address: vaultAddress,
       abi: erc20Abi,
@@ -235,30 +235,16 @@ export default function WithdrawModal({
     return () => window.removeEventListener("keydown", handleKey)
   }, [isOpen, onClose])
 
-  // Invalidar cache tras éxito + cerrar modal
+  // Invalidar todas las queries tras éxito + cerrar modal
   useEffect(() => {
     if (!isSuccess) return
 
-    queryClient.invalidateQueries({
-      predicate: (q) =>
-        JSON.stringify(q.queryKey).toLowerCase().includes(vaultAddress.toLowerCase()),
-    })
-    queryClient.invalidateQueries({ queryKey: ["harvests"] })
-    // Invalidar TVL de ambos vaults (useReadContracts en useVault)
-    queryClient.invalidateQueries({
-      predicate: (q) => {
-        const key = JSON.stringify(q.queryKey).toLowerCase()
-        return (
-          key.includes(ADDRESSES.balanced.vault.toLowerCase()) ||
-          key.includes(ADDRESSES.aggressive.vault.toLowerCase())
-        )
-      },
-    })
-    refetchSharesAllowance()
+    // Refresca todo simultáneamente: TVL, posición, share price, allocations, harvests
+    queryClient.invalidateQueries()
 
     const timer = setTimeout(() => onClose(), 2_000)
     return () => clearTimeout(timer)
-  }, [isSuccess, queryClient, vaultAddress, onClose, refetchSharesAllowance])
+  }, [isSuccess, queryClient, onClose])
 
   // ── Acción principal ─────────────────────────────────────────────────────
   const handleAction = useCallback(() => {
@@ -612,7 +598,7 @@ export default function WithdrawModal({
               marginTop: 6,
             }}
           >
-            Your position: {parseFloat(userPosition).toFixed(4)} WETH
+            Your position: {parseFloat(userPosition).toFixed(2)} WETH
           </div>
         </div>
 
@@ -626,7 +612,7 @@ export default function WithdrawModal({
               ) : quoterError ? (
                 <span style={{ color: "var(--muted)" }}>Unable to estimate</span>
               ) : quotedToken ? (
-                `~${parseFloat(formatUnits(quotedToken, outputToken.decimals)).toFixed(4)} ${outputToken.symbol}`
+                `~${parseFloat(formatUnits(quotedToken, outputToken.decimals)).toFixed(2)} ${outputToken.symbol}`
               ) : (
                 <span style={{ color: "var(--muted)" }}>—</span>
               )}
@@ -721,7 +707,7 @@ export default function WithdrawModal({
             </span>
             <span style={{ ...monoStyle, fontSize: 11, color: "var(--text)" }}>
               {needsSwap && quotedToken
-                ? `~${parseFloat(formatUnits(quotedToken, outputToken.decimals)).toFixed(4)} ${outputToken.symbol}`
+                ? `~${parseFloat(formatUnits(quotedToken, outputToken.decimals)).toFixed(2)} ${outputToken.symbol}`
                 : `~${rawWethAmount || "0"} ${outputToken.symbol}`}
             </span>
           </div>
@@ -732,8 +718,8 @@ export default function WithdrawModal({
             <span style={{ ...monoStyle, fontSize: 11, color: "var(--muted)" }}>
               ~
               {sharesNeeded > 0n
-                ? parseFloat(formatUnits(sharesNeeded, 18)).toFixed(4)
-                : "0.0000"}{" "}
+                ? parseFloat(formatUnits(sharesNeeded, 18)).toFixed(2)
+                : "0.00"}{" "}
               vxWETH
             </span>
           </div>

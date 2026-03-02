@@ -67,7 +67,6 @@ export function useVaultAPY(
     args: [WSTETH_ADDRESS],
     query: {
       staleTime: 60_000,
-      refetchInterval: 60_000,
     },
   })
 

@@ -81,7 +81,6 @@ export function useHarvests() {
         .sort((a, b) => (b.blockNumber > a.blockNumber ? 1 : -1))
         .slice(0, 5)
     },
-    refetchInterval: 60_000,
     staleTime: 60_000,
     enabled: !!publicClient,
   })

@@ -74,11 +74,11 @@ export default function VaultCard({
   const user_position_formatted =
     vault_loading || parseFloat(userPosition) === 0
       ? "—"
-      : `${parseFloat(userPosition).toFixed(4)} WETH`;
+      : `${parseFloat(userPosition).toFixed(2)} WETH`;
 
   const share_price_formatted = vault_loading
     ? null
-    : parseFloat(sharePrice).toFixed(4);
+    : parseFloat(sharePrice).toFixed(2);
 
   // Display del APY: skeleton si carga, "~X.X%" si estimado, "X.X%" si real
   const apy_display = apy_loading
