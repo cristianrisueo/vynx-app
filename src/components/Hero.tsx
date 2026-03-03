@@ -1,4 +1,4 @@
-type Page = 'home' | 'docs'
+type Page = "home" | "docs";
 
 /**
  * Hero — full-viewport landing section split into two halves.
@@ -123,7 +123,7 @@ export default function Hero({ setPage }: { setPage: (page: Page) => void }) {
           style={{ display: "flex", alignItems: "center", gap: 24 }}
         >
           <button
-            onClick={() => setPage('docs')}
+            onClick={() => setPage("docs")}
             style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: 14,
@@ -190,7 +190,7 @@ export default function Hero({ setPage }: { setPage: (page: Page) => void }) {
       >
         {/* Photo */}
         <img
-          src="/src/assets/profile.webp"
+          src="/profile.webp"
           alt="Cristian Risueño"
           style={{
             position: "absolute",
