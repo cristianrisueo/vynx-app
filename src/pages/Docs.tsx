@@ -113,7 +113,9 @@ export default function Docs({
         <select
           className="md:hidden w-full mb-8 bg-vynx-bg border border-vynx-border text-vynx-muted font-mono text-xs uppercase tracking-wider p-3"
           onChange={(e) =>
-            document.getElementById(e.target.value)?.scrollIntoView({ behavior: "smooth" })
+            document
+              .getElementById(e.target.value)
+              ?.scrollIntoView({ behavior: "smooth" })
           }
         >
           {SECTIONS.map(({ id, title }) => (
@@ -235,9 +237,6 @@ export default function Docs({
               >
                 github.com/cristianrisueo/vynx
               </a>
-              <span className="font-mono text-[10px] text-vynx-muted">
-                /docs/
-              </span>
             </div>
           </section>
 
@@ -424,7 +423,6 @@ function _allocateIdle() internal {
                 Key Design Decisions
               </h3>
               <div className="space-y-8">
-
                 <div className="space-y-3">
                   <p
                     className="font-mono text-sm uppercase text-vynx-text pb-2"
@@ -522,7 +520,6 @@ function _allocateIdle() internal {
                     accounting for the keeper reward.
                   </p>
                 </div>
-
               </div>
             </div>
           </section>
@@ -1099,7 +1096,10 @@ vault.syncIdleBuffer();
                       },
                       { key: "max_strategies", val: "10" },
                     ].map(({ key, val }) => (
-                      <div key={key} className="flex flex-col gap-0.5 md:flex-row md:justify-between md:gap-2">
+                      <div
+                        key={key}
+                        className="flex flex-col gap-0.5 md:flex-row md:justify-between md:gap-2"
+                      >
                         <span className="text-vynx-muted">{key}</span>
                         <span className="text-vynx-gold">{val}</span>
                       </div>
@@ -1751,10 +1751,12 @@ forge coverage --no-match-path "test/invariant/*" --ir-minimum
 forge doc --serve --port 4000`}
               </CodeBlock>
             </div>
-
           </section>
 
-          <section id="acknowledgements" className="scroll-mt-32 space-y-8 pb-24">
+          <section
+            id="acknowledgements"
+            className="scroll-mt-32 space-y-8 pb-24"
+          >
             <H2>Acknowledgements</H2>
             <div className="space-y-4">
               <p className="text-sm text-vynx-muted">
@@ -1771,10 +1773,10 @@ forge doc --serve --port 4000`}
                   </p>
                   <p className="text-sm text-vynx-muted">
                     His Solidity and Foundry course on Cyfrin Updraft was the
-                    technical foundation of this project. His rigorous
-                    approach — tests first, invariants, fuzz testing — directly
-                    shapes the architecture of VynX's test suite. Thank you for
-                    making smart contract knowledge accessible and honest.
+                    technical foundation of this project. His rigorous approach
+                    — tests first, invariants, fuzz testing — directly shapes
+                    the architecture of VynX's test suite. Thank you for making
+                    smart contract knowledge accessible and honest.
                   </p>
                 </div>
                 <div className="space-y-3">
@@ -1806,9 +1808,8 @@ forge doc --serve --port 4000`}
                     <span className="font-mono text-vynx-text">
                       Simplicity³
                     </span>{" "}
-                    — not just simple, but ruthlessly, relentlessly,
-                    obsessively simple — should be the standard every product
-                    is held to.
+                    — not just simple, but ruthlessly, relentlessly, obsessively
+                    simple — should be the standard every product is held to.
                   </p>
                 </div>
               </div>
