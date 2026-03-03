@@ -1,6 +1,7 @@
 export default function Footer() {
   return (
     <footer
+      className="site-footer"
       style={{
         borderTop: "1px solid var(--border)",
         padding: "40px 60px",

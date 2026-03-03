@@ -3,6 +3,7 @@ type Page = 'home' | 'docs'
 export default function Hero({ setPage }: { setPage: (page: Page) => void }) {
   return (
     <section
+      className="hero-section"
       style={{
         minHeight: "100vh",
         display: "grid",
@@ -11,8 +12,9 @@ export default function Hero({ setPage }: { setPage: (page: Page) => void }) {
         overflow: "hidden",
       }}
     >
-      {/* Vertical divider line */}
+      {/* Línea divisora vertical — se oculta en móvil */}
       <div
+        className="hero-divider"
         style={{
           position: "absolute",
           left: "50%",
@@ -27,6 +29,7 @@ export default function Hero({ setPage }: { setPage: (page: Page) => void }) {
 
       {/* LEFT: headline + CTA */}
       <div
+        className="hero-left"
         style={{
           display: "flex",
           flexDirection: "column",
@@ -50,6 +53,7 @@ export default function Hero({ setPage }: { setPage: (page: Page) => void }) {
           }}
         >
           <span
+            className="hero-eyebrow-line"
             style={{
               display: "block",
               width: 32,
@@ -63,7 +67,7 @@ export default function Hero({ setPage }: { setPage: (page: Page) => void }) {
 
         {/* Headline */}
         <h1
-          className="fade-up fade-up-1"
+          className="hero-headline fade-up fade-up-1"
           style={{
             fontFamily: "'Bebas Neue', sans-serif",
             fontSize: "clamp(72px, 8vw, 120px)",
@@ -108,7 +112,7 @@ export default function Hero({ setPage }: { setPage: (page: Page) => void }) {
 
         {/* CTAs */}
         <div
-          className="fade-up fade-up-3"
+          className="hero-cta-group fade-up fade-up-3"
           style={{ display: "flex", alignItems: "center", gap: 24 }}
         >
           <button
@@ -168,8 +172,9 @@ export default function Hero({ setPage }: { setPage: (page: Page) => void }) {
         </div>
       </div>
 
-      {/* RIGHT: photo */}
+      {/* RIGHT: foto */}
       <div
+        className="hero-right"
         style={{
           position: "relative",
           overflow: "hidden",
@@ -276,8 +281,9 @@ export default function Hero({ setPage }: { setPage: (page: Page) => void }) {
           }}
         />
 
-        {/* Photo label */}
+        {/* Photo label — oculto en móvil */}
         <div
+          className="hero-photo-label"
           style={{
             position: "absolute",
             bottom: 60,

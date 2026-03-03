@@ -109,6 +109,56 @@ body::before {
 }
 
 
+/* ── RESPONSIVE MOBILE (max 767px) ── */
+@media (max-width: 767px) {
+
+  /* Navbar */
+  .site-nav { padding: 20px 24px !important; }
+
+  /* Hero */
+  .hero-section        { grid-template-columns: 1fr; }
+  .hero-divider        { display: none; }
+  .hero-left           { padding: 0 24px; width: 100%; text-align: center; align-items: center; }
+  .hero-left > .fade-up:first-child { font-size: 9px; letter-spacing: 2px; white-space: nowrap; }
+  .hero-headline       { font-size: 48px !important; }
+  .hero-right          { display: none; }
+  .hero-eyebrow-line   { display: none; }
+  .hero-cta-group      { flex-direction: row; justify-content: center; gap: 12px; }
+  .hero-cta-group > *  { width: auto; }
+
+  /* MetricsStrip */
+  .metrics-strip                  { grid-template-columns: 1fr !important; }
+  .metric-cell                    { width: 100%; padding: 36px 24px !important; border-right: none !important; border-bottom: 1px solid var(--border); }
+  .metric-cell > div:nth-child(2) { font-size: clamp(2rem, 8vw, 3rem) !important; }
+  .metric-cell:last-child         { border-bottom: none; }
+
+  /* VaultsGrid */
+  .vaults-grid { grid-template-columns: 1fr !important; }
+
+  /* VaultCard */
+  .vault-card              { padding: 24px !important; gap: 16px !important; }
+  .vault-header            { display: flex !important; justify-content: space-between; align-items: flex-end; }
+  .vault-name              { font-size: 32px !important; letter-spacing: 2px !important; }
+  .vault-apy-label         { display: none; }
+  .vault-apy               { font-size: 32px !important; }
+  .vault-actions           { flex-direction: column; }
+  .vault-actions button    { flex: none; width: 100%; }
+  .vault-stats-grid        { gap: 12px !important; }
+  .vault-stats-grid .stat-right { text-align: right; }
+  .vault-strategy-section  { min-height: 0 !important; }
+
+  /* HarvestTable */
+  .harvest-section      { padding: 48px 24px !important; }
+  .harvest-table-scroll { overflow-x: auto; width: 100%; }
+
+  /* Footer */
+  .site-footer { flex-direction: column; text-align: center; gap: 20px; padding: 40px 24px !important; }
+
+  /* Modales */
+  .modal-panel      { padding: 24px !important; max-height: 90vh; overflow-y: auto; }
+  .modal-action-btn { position: sticky; bottom: 0; background: var(--surface); }
+}
+
 /* ── SHADCN TOKENS (preserved) ── */
 @layer base {
   :root {

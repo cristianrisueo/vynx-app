@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 
-export default function Navbar({ onLogoClick }: { onLogoClick?: () => void } = {}) {
+export default function Navbar({
+  onLogoClick,
+}: { onLogoClick?: () => void } = {}) {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
@@ -22,6 +24,7 @@ export default function Navbar({ onLogoClick }: { onLogoClick?: () => void } = {
 
   return (
     <nav
+      className="site-nav"
       style={{
         position: "absolute",
         top: 0,
@@ -59,24 +62,27 @@ export default function Navbar({ onLogoClick }: { onLogoClick?: () => void } = {
       <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
         <div style={{ position: "relative" }}>
           <button
+            className="navbar-wallet-btn"
             onClick={handleLaunch}
             style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: 11,
               letterSpacing: 2,
               textTransform: "uppercase",
-              color: isConnected ? "var(--muted)" : "var(--bg)",
-              background: isConnected ? "none" : "var(--gold)",
-              border: isConnected ? "1px solid var(--border)" : "none",
+              color: "var(--text)",
+              background: "var(--transparent)",
+              border: "1px solid var(--gold)",
               padding: "12px 28px",
               cursor: "pointer",
               transition: "opacity 0.2s",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.opacity = "0.8";
+              e.currentTarget.style.border = "1px solid var(--text)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.opacity = "1";
+              e.currentTarget.style.border = "1px solid var(--gold)";
             }}
           >
             {isConnected ? shortAddress : "Connect Wallet"}

@@ -101,48 +101,56 @@ export default function VaultCard({
           borderBottom: "1px solid var(--border)",
         }}
       >
-        {/* Nombre del vault */}
-        <div
-          style={{
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: 40,
-            letterSpacing: 3,
-            lineHeight: 1,
-            color: "var(--text)",
-          }}
-        >
-          {name}
-        </div>
-
-        {/* APY — elemento dominante */}
-        <div>
+        {/* Header: nombre + APY en fila en móvil */}
+        <div className="vault-header" style={{ display: "contents" }}>
+          {/* Nombre del vault */}
           <div
-            style={{
-              fontFamily: "'DM Mono', monospace",
-              fontSize: 10,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              color: "var(--muted)",
-              marginBottom: 8,
-            }}
-          >
-            APY
-          </div>
-          <div
+            className="vault-name"
             style={{
               fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: 56,
-              letterSpacing: 1,
+              fontSize: 40,
+              letterSpacing: 3,
               lineHeight: 1,
-              color: "var(--green)",
+              color: "var(--text)",
             }}
           >
-            {apy_display === null ? <Skeleton width={140} height={56} /> : apy_display}
+            {name}
+          </div>
+
+          {/* APY — elemento dominante */}
+          <div>
+            <div
+              className="vault-apy-label"
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 10,
+                letterSpacing: 2,
+                textTransform: "uppercase",
+                color: "var(--muted)",
+                marginBottom: 8,
+              }}
+            >
+              APY
+            </div>
+            {/* APY — tamaño reducido en móvil con .vault-apy */}
+            <div
+              className="vault-apy"
+              style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: 56,
+                letterSpacing: 1,
+                lineHeight: 1,
+                color: "var(--green)",
+              }}
+            >
+              {apy_display === null ? <Skeleton width={140} height={56} /> : apy_display}
+            </div>
           </div>
         </div>
 
         {/* Stats grid */}
         <div
+          className="vault-stats-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
@@ -150,11 +158,13 @@ export default function VaultCard({
           }}
         >
           <StatItem label="Your Position" value={user_position_formatted} />
-          <StatItem label="Share Price" value={share_price_formatted} />
+          <div className="stat-right">
+            <StatItem label="Share Price" value={share_price_formatted} />
+          </div>
         </div>
 
         {/* Desglose de estrategias — datos reales del StrategyManager */}
-        <div style={{ minHeight: 120 }}>
+        <div className="vault-strategy-section" style={{ minHeight: 120 }}>
           {/* Vault vacío sin allocations */}
           {vault_vacio && (
             <div
@@ -208,8 +218,8 @@ export default function VaultCard({
             ))}
         </div>
 
-        {/* Acciones */}
-        <div style={{ display: "flex", gap: 12 }}>
+        {/* Acciones — apiladas en móvil con .vault-actions */}
+        <div className="vault-actions" style={{ display: "flex", gap: 12 }}>
           <VaultButton deposit onClick={handleDeposit}>
             Deposit
           </VaultButton>

@@ -509,8 +509,9 @@ export default function DepositModal({
         justifyContent: "center",
       }}
     >
-      {/* Panel del modal */}
+      {/* Panel del modal — padding reducido y scrolleable en móvil */}
       <div
+        className="modal-panel"
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "var(--surface)",
@@ -821,8 +822,9 @@ export default function DepositModal({
           )}
         </div>
 
-        {/* ── Botón principal ── */}
+        {/* ── Botón principal — sticky en móvil para visibilidad con teclado virtual ── */}
         <button
+          className="modal-action-btn"
           onClick={handleAction}
           disabled={
             isApprovePending ||

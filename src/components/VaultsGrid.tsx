@@ -23,8 +23,9 @@ const VAULTS: VaultCardProps[] = [
 export default function VaultsGrid() {
   return (
     <section>
-      {/* Grid de dos columnas */}
+      {/* Grid de dos columnas — una columna en móvil */}
       <div
+        className="vaults-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",

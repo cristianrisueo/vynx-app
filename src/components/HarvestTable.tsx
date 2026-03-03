@@ -21,7 +21,7 @@ export default function HarvestTable() {
   const { data: harvests, isLoading, isError } = useHarvests()
 
   return (
-    <section style={{ padding: "50px 60px 50px" }}>
+    <section className="harvest-section" style={{ padding: "50px 60px 50px" }}>
       {/* Encabezado de sección */}
       <div style={{ marginBottom: 28 }}>
         <div
@@ -48,6 +48,8 @@ export default function HarvestTable() {
         </p>
       </div>
 
+      {/* Wrapper con scroll horizontal en móvil */}
+      <div className="harvest-table-scroll">
       <table
         style={{
           width: "100%",
@@ -144,6 +146,7 @@ export default function HarvestTable() {
             ))}
         </tbody>
       </table>
+      </div>
     </section>
   );
 }

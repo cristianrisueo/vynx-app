@@ -30,6 +30,7 @@ export default function MetricsStrip() {
 
   return (
     <div
+      className="metrics-strip"
       style={{
         borderTop: "1px solid var(--border)",
         borderBottom: "1px solid var(--border)",
@@ -92,6 +93,7 @@ function MetricCell({
 }) {
   return (
     <div
+      className="metric-cell"
       style={{
         padding: "48px 60px",
         borderRight: borderRight ? "1px solid var(--border)" : "none",

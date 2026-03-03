@@ -97,7 +97,21 @@ export default function Docs({
       <Navbar onLogoClick={setPage ? () => setPage("home") : undefined} />
 
       <main className="flex-grow max-w-7xl mx-auto w-full px-6 md:px-12 py-24 flex flex-col md:flex-row gap-16 relative">
-        {/* ── Sticky sidebar ── */}
+        {/* Selector de sección — solo visible en móvil, reemplaza al sidebar */}
+        <select
+          className="md:hidden w-full mb-8 bg-vynx-bg border border-vynx-border text-vynx-muted font-mono text-xs uppercase tracking-wider p-3"
+          onChange={(e) =>
+            document.getElementById(e.target.value)?.scrollIntoView({ behavior: "smooth" })
+          }
+        >
+          {SECTIONS.map(({ id, title }) => (
+            <option key={id} value={id}>
+              {title}
+            </option>
+          ))}
+        </select>
+
+        {/* ── Sticky sidebar — oculto en móvil ── */}
         <aside className="hidden md:block w-56 shrink-0">
           <div className="sticky top-32">
             <ul className="space-y-4 border-l border-vynx-border">
@@ -1062,7 +1076,8 @@ vault.syncIdleBuffer();
                     </span>
                     <StatusBadge label="Implemented" />
                   </div>
-                  <div className="grid grid-cols-2 gap-3 font-mono text-xs">
+                  {/* Grid de parámetros — 1 columna en móvil, 2 en desktop */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-xs">
                     {[
                       { key: "max_tvl", val: "1,000 ETH" },
                       { key: "min_deposit", val: "0.01 ETH" },
@@ -1072,7 +1087,7 @@ vault.syncIdleBuffer();
                       },
                       { key: "max_strategies", val: "10" },
                     ].map(({ key, val }) => (
-                      <div key={key} className="flex justify-between gap-2">
+                      <div key={key} className="flex flex-col gap-0.5 md:flex-row md:justify-between md:gap-2">
                         <span className="text-vynx-muted">{key}</span>
                         <span className="text-vynx-gold">{val}</span>
                       </div>
