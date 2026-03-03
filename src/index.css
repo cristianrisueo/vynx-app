@@ -1,11 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ── RESET ── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -13,14 +15,14 @@
 
 /* ── VynX DESIGN TOKENS ── */
 :root {
-  --bg:        #08080A;
-  --surface:   #111114;
-  --border:    #1E1E24;
-  --text:      #F2F2F0;
-  --muted:     #6B6B75;
-  --gold:      #E8C547;
-  --gold-dim:  #E8C54720;
-  --green:     #4ADE80;
+  --bg: #08080a;
+  --surface: #111114;
+  --border: #1e1e24;
+  --text: #f2f2f0;
+  --muted: #6b6b75;
+  --gold: #e8c547;
+  --gold-dim: #e8c54720;
+  --green: #4ade80;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -35,7 +37,7 @@ html {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
   font-weight: 300;
   overflow-x: hidden;
   min-width: 320px;
@@ -60,7 +62,7 @@ button:focus-visible {
 
 /* ── GRAIN OVERLAY ── */
 body::before {
-  content: '';
+  content: "";
   position: fixed;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
@@ -71,26 +73,44 @@ body::before {
 
 /* ── ANIMATIONS ── */
 @keyframes ticker {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 @keyframes barGrow {
-  from { width: 0; }
+  from {
+    width: 0;
+  }
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .fade-up {
   opacity: 0;
   animation: fadeUp 0.8s ease forwards;
 }
-.fade-up-1 { animation-delay: 0.1s; }
-.fade-up-2 { animation-delay: 0.2s; }
-.fade-up-3 { animation-delay: 0.3s; }
+.fade-up-1 {
+  animation-delay: 0.1s;
+}
+.fade-up-2 {
+  animation-delay: 0.2s;
+}
+.fade-up-3 {
+  animation-delay: 0.3s;
+}
 
 /* ── STRATEGY BAR ── */
 .strategy-bar-fill {
@@ -108,56 +128,140 @@ body::before {
   transition: background 0.15s ease;
 }
 
-
 /* ── RESPONSIVE MOBILE (max 767px) ── */
 @media (max-width: 767px) {
-
   /* Navbar */
-  .site-nav { padding: 20px 24px !important; }
+  .site-nav {
+    padding: 20px 24px !important;
+  }
 
   /* Hero */
-  .hero-section        { grid-template-columns: 1fr; }
-  .hero-divider        { display: none; }
-  .hero-left           { padding: 0 24px; width: 100%; text-align: center; align-items: center; }
-  .hero-left > .fade-up:first-child { font-size: 9px; letter-spacing: 2px; white-space: nowrap; }
-  .hero-headline       { font-size: 48px !important; }
-  .hero-right          { display: none; }
-  .hero-eyebrow-line   { display: none; }
-  .hero-cta-group      { flex-direction: row; justify-content: center; gap: 12px; }
-  .hero-cta-group > *  { width: auto; }
+  .hero-section {
+    grid-template-columns: 1fr;
+  }
+  .hero-divider {
+    display: none;
+  }
+  .hero-left {
+    padding: 0 24px;
+    width: 100%;
+    text-align: center;
+    align-items: center;
+  }
+  .hero-left > .fade-up:first-child {
+    font-size: 9px;
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+  .hero-headline {
+    font-size: 48px !important;
+  }
+  .hero-right {
+    display: none;
+  }
+  .hero-eyebrow-line {
+    display: none;
+  }
+  .hero-cta-group {
+    flex-direction: row;
+    justify-content: center;
+    gap: 12px;
+  }
+  .hero-cta-group > * {
+    width: auto;
+  }
 
   /* MetricsStrip — 2+1 layout */
-  .metrics-strip                  { grid-template-columns: 1fr 1fr !important; }
-  .metric-cell                    { padding: 28px 24px !important; border-right: none !important; border-bottom: 1px solid var(--border); }
-  .metric-cell:first-child        { border-right: 1px solid var(--border) !important; }
-  .metric-cell:last-child         { grid-column: 1 / -1; border-bottom: none; padding: 20px 24px !important; }
-  .metric-cell > div:nth-child(2) { font-size: clamp(1.5rem, 7vw, 2.5rem) !important; }
+  .metrics-strip {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .metric-cell {
+    padding: 28px 24px !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border);
+  }
+  .metric-cell:first-child {
+    border-right: 1px solid var(--border) !important;
+  }
+  .metric-cell:last-child {
+    grid-column: 1 / -1;
+    border-bottom: none;
+    padding: 20px 24px !important;
+  }
+  .metric-cell > div:nth-child(2) {
+    font-size: clamp(1.5rem, 7vw, 2.5rem) !important;
+  }
 
   /* VaultsGrid */
-  .vaults-grid { grid-template-columns: 1fr !important; }
+  .vaults-grid {
+    grid-template-columns: 1fr !important;
+  }
 
   /* VaultCard */
-  .vault-card              { padding: 24px !important; gap: 16px !important; }
-  .vault-header            { display: flex !important; justify-content: space-between; align-items: flex-end; }
-  .vault-name              { font-size: 32px !important; letter-spacing: 2px !important; }
-  .vault-apy-label         { display: none; }
-  .vault-apy               { font-size: 32px !important; }
-  .vault-actions           { flex-direction: column; }
-  .vault-actions button    { flex: none; width: 100%; }
-  .vault-stats-grid        { gap: 12px !important; }
-  .vault-stats-grid .stat-right { text-align: right; }
-  .vault-strategy-section  { min-height: 0 !important; }
+  .vault-card {
+    padding: 24px !important;
+    gap: 16px !important;
+  }
+  .vault-header {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .vault-name {
+    font-size: 32px !important;
+    letter-spacing: 2px !important;
+  }
+  .vault-apy-label {
+    display: none;
+  }
+  .vault-apy {
+    font-size: 32px !important;
+  }
+  .vault-actions {
+    flex-direction: column;
+  }
+  .vault-actions button {
+    flex: none;
+    width: 100%;
+  }
+  .vault-stats-grid {
+    gap: 12px !important;
+  }
+  .vault-stats-grid .stat-right {
+    text-align: right;
+  }
+  .vault-strategy-section {
+    min-height: 0 !important;
+  }
 
   /* HarvestTable */
-  .harvest-section      { padding: 48px 24px !important; }
-  .harvest-table-scroll { overflow-x: auto; width: 100%; }
+  .harvest-section {
+    padding: 48px 24px !important;
+  }
+  .harvest-table-scroll {
+    overflow-x: auto;
+    width: 100%;
+  }
 
   /* Footer */
-  .site-footer { flex-direction: column; text-align: center; gap: 20px; padding: 40px 24px !important; }
+  .site-footer {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+    padding: 40px 20px !important;
+  }
 
   /* Modales */
-  .modal-panel      { padding: 24px !important; max-height: 90vh; overflow-y: auto; }
-  .modal-action-btn { position: sticky; bottom: 0; background: var(--surface); }
+  .modal-panel {
+    padding: 24px !important;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-action-btn {
+    position: sticky;
+    bottom: 0;
+    background: var(--surface);
+  }
 }
 
 /* ── SHADCN TOKENS (preserved) ── */
