@@ -1,5 +1,12 @@
 type Page = 'home' | 'docs'
 
+/**
+ * Hero — full-viewport landing section split into two halves.
+ * Left: headline, protocol tagline, and CTA buttons.
+ * Right: founder photo (or geometric placeholder if image is absent).
+ *
+ * @param setPage - Callback to navigate to the Docs page
+ */
 export default function Hero({ setPage }: { setPage: (page: Page) => void }) {
   return (
     <section
@@ -12,7 +19,7 @@ export default function Hero({ setPage }: { setPage: (page: Page) => void }) {
         overflow: "hidden",
       }}
     >
-      {/* Línea divisora vertical — se oculta en móvil */}
+      {/* Vertical divider line — hidden on mobile */}
       <div
         className="hero-divider"
         style={{
@@ -281,7 +288,7 @@ export default function Hero({ setPage }: { setPage: (page: Page) => void }) {
           }}
         />
 
-        {/* Photo label — oculto en móvil */}
+        {/* Photo label — hidden on mobile */}
         <div
           className="hero-photo-label"
           style={{

@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 
+/**
+ * Navbar — site-wide navigation bar with wallet connect/disconnect.
+ * Renders the VynX logo (optionally clickable) and a wallet button.
+ * When connected, clicking the address label toggles a disconnect dropdown.
+ *
+ * @param onLogoClick - Optional callback when the logo is clicked (used in Docs to navigate home)
+ */
 export default function Navbar({
   onLogoClick,
 }: { onLogoClick?: () => void } = {}) {

@@ -1,8 +1,8 @@
 import VaultCard, { type VaultCardProps } from "./VaultCard";
 import { ADDRESSES } from "@/config/addresses";
 
-// Configuración de los vaults — addresses reales en Mainnet
-// apy y strategies ya no son props — se calculan on-chain en VaultCard
+// Vault configuration — live Mainnet addresses
+// apy and strategies are not props — computed on-chain inside VaultCard
 const VAULTS: VaultCardProps[] = [
   {
     name: "Balanced",
@@ -20,10 +20,14 @@ const VAULTS: VaultCardProps[] = [
   },
 ];
 
+/**
+ * VaultsGrid — renders the two vault cards (Balanced and Aggressive)
+ * in a responsive two-column grid.
+ */
 export default function VaultsGrid() {
   return (
     <section>
-      {/* Grid de dos columnas — una columna en móvil */}
+      {/* Two-column grid — single column on mobile */}
       <div
         className="vaults-grid"
         style={{

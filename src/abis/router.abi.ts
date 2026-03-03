@@ -1,5 +1,5 @@
-// ABI del Router periférico de VynX
-// Cada vault tiene su propio router deployado — no recibe vaultAddress como parámetro
+// ABI of the VynX periphery Router
+// Each vault has its own deployed router — vaultAddress is not a parameter
 export const routerAbi = [
   {
     name: "zapDepositETH",

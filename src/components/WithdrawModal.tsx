@@ -19,8 +19,9 @@ import { routerAbi } from "@/abis/router.abi";
 import { erc20Abi } from "@/abis/erc20.abi";
 import { quoterAbi } from "@/abis/quoter.abi";
 import { useVault } from "@/hooks/useVault";
+import { useDebounce } from "@/hooks/useDebounce";
 
-// ── Utilidad: parsear errores de wagmi para mostrar al usuario ───────────────
+// ── Utility: parse wagmi errors into user-facing messages ────────────────────
 function parseError(err: Error): string {
   const msg = err.message ?? "";
   if (
@@ -31,15 +32,9 @@ function parseError(err: Error): string {
   return "Transaction failed. Check console for details.";
 }
 
-// ── Utilidad: debounce genérico ──────────────────────────────────────────────
-function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
-  return debounced;
-}
+// ── Constants ────────────────────────────────────────────────────────────────
+const DEBOUNCE_MS = 500        // delay before firing a Quoter RPC call while typing
+const MODAL_CLOSE_DELAY_MS = 2_000  // pause after success before closing the modal
 
 // ── Props ────────────────────────────────────────────────────────────────────
 interface WithdrawModalProps {
@@ -50,7 +45,7 @@ interface WithdrawModalProps {
   vaultName: string;
 }
 
-// ── Estilos compartidos ──────────────────────────────────────────────────────
+// ── Shared styles ────────────────────────────────────────────────────────────
 const labelStyle: React.CSSProperties = {
   fontFamily: "'DM Mono', monospace",
   fontSize: 10,
@@ -70,7 +65,17 @@ const separatorStyle: React.CSSProperties = {
   margin: "20px 0",
 };
 
-// ── Componente principal ─────────────────────────────────────────────────────
+/**
+ * WithdrawModal — full-screen modal for withdrawing from an ERC-4626 vault.
+ * Supports withdrawal to ETH (native), WETH (direct), and ERC-20 tokens (via Uniswap V3 swap).
+ * Handles share approval, Quoter price fetching, and the withdraw transaction in sequence.
+ *
+ * @param isOpen - Whether the modal is visible
+ * @param onClose - Callback to close the modal
+ * @param vaultAddress - Mainnet address of the ERC-4626 vault
+ * @param routerAddress - Mainnet address of the Router periphery contract
+ * @param vaultName - Display name shown in the modal header
+ */
 export default function WithdrawModal({
   isOpen,
   onClose,
@@ -84,10 +89,10 @@ export default function WithdrawModal({
   const publicClient = usePublicClient();
   const queryClient = useQueryClient();
 
-  // Datos del vault para saber la posición del usuario
+  // Vault data needed to display the user's current position
   const { userPosition } = useVault(vaultAddress);
 
-  // Estado del modal
+  // Modal state
   const [outputToken, setOutputToken] = useState<TokenConfig>(
     SUPPORTED_TOKENS[0],
   );
@@ -98,7 +103,7 @@ export default function WithdrawModal({
   const [quoterError, setQuoterError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const debouncedAmount = useDebounce(rawWethAmount, 500);
+  const debouncedAmount = useDebounce(rawWethAmount, DEBOUNCE_MS);
 
   // Requiere swap si el token de salida no es ETH ni WETH
   const needsSwap = outputToken.poolFee !== null;
@@ -188,7 +193,7 @@ export default function WithdrawModal({
       });
   }, [debouncedAmount, outputToken, needsSwap, publicClient]);
 
-  // Slippage fijo (0.5% — protección estándar contra movimiento de precio)
+  // Fixed slippage (0.5% — standard protection against price movement)
   const effectiveSlippage = 0.5;
 
   // Min token out con slippage aplicado
@@ -212,7 +217,7 @@ export default function WithdrawModal({
     hash: txHash,
   });
 
-  // ── Escritura: aprobación de shares (par independiente) ──────────────────
+  // ── Write: share approval (independent pair) ─────────────────────────────
   const {
     writeContract: writeApprove,
     data: approveTxHash,
@@ -273,7 +278,7 @@ export default function WithdrawModal({
     }
   }, [isOpen, resetWrite, resetApprove]);
 
-  // Bloquear scroll del body mientras el modal está abierto
+  // Lock body scroll while the modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -293,18 +298,18 @@ export default function WithdrawModal({
     return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
 
-  // Invalidar todas las queries tras éxito + cerrar modal
+  // Invalidate all queries on success and schedule modal close
   useEffect(() => {
     if (!isSuccess) return;
 
-    // Refresca todo simultáneamente: TVL, posición, share price, allocations, harvests
+    // Refreshes everything at once: TVL, position, share price, allocations, harvests
     queryClient.invalidateQueries();
 
-    const timer = setTimeout(() => onClose(), 2_000);
+    const timer = setTimeout(() => onClose(), MODAL_CLOSE_DELAY_MS);
     return () => clearTimeout(timer);
   }, [isSuccess, queryClient, onClose]);
 
-  // Aprobación de shares confirmada → disparar retiro automáticamente
+  // Share approval confirmed — trigger the withdraw automatically
   useEffect(() => {
     if (!isApproveSuccess || !userAddress) return;
 
@@ -331,7 +336,7 @@ export default function WithdrawModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isApproveSuccess]); // el usuario no puede editar durante el flujo — captura estable
 
-  // ── Acción principal ─────────────────────────────────────────────────────
+  // ── Main action handler ──────────────────────────────────────────────────
   const handleAction = useCallback(() => {
     if (!isConnected) {
       const injected = connectors[0];
@@ -406,7 +411,7 @@ export default function WithdrawModal({
     writeApprove,
   ]);
 
-  // ── Label del botón según estado ─────────────────────────────────────────
+  // ── Button label derived from current state ──────────────────────────────
   function getButtonLabel(): string {
     if (!isConnected) return "CONNECT WALLET";
     if (isSuccess) return "WITHDRAW CONFIRMED ✓";
@@ -452,7 +457,7 @@ export default function WithdrawModal({
         justifyContent: "center",
       }}
     >
-      {/* Panel del modal — padding reducido y scrolleable en móvil */}
+      {/* Modal panel — reduced padding, scrollable on mobile */}
       <div
         className="modal-panel"
         onClick={(e) => e.stopPropagation()}
@@ -715,7 +720,7 @@ export default function WithdrawModal({
 
         <div style={separatorStyle} />
 
-        {/* ── Resumen de la operación ── */}
+        {/* ── Operation summary ── */}
         <div style={{ marginBottom: 20 }}>
           <div
             style={{
@@ -761,7 +766,7 @@ export default function WithdrawModal({
           </div>
         </div>
 
-        {/* ── Botón principal — sticky en móvil para visibilidad con teclado virtual ── */}
+        {/* ── Primary button — sticky on mobile for visibility with virtual keyboard ── */}
         <button
           className="modal-action-btn"
           onClick={handleAction}

@@ -3,8 +3,10 @@ import { useHarvests } from "@/hooks/useHarvests"
 import { ADDRESSES } from "@/config/addresses"
 import Skeleton from "./Skeleton"
 
-// Formatea un valor en ETH: >1000 → "1.2K ETH", resto → "847.3 ETH"
-// TODO: multiplicar por precio ETH/USD cuando se añada oracle de precio
+// Mainnet block at which the VynX protocol was deployed
+const DEPLOYMENT_BLOCK = 19_847_203
+
+// TODO: multiply by ETH/USD spot price once a price oracle is integrated
 function formatEth(value: number): string {
   if (value >= 1_000) {
     return `${(value / 1_000).toFixed(2)}K ETH`
@@ -12,17 +14,21 @@ function formatEth(value: number): string {
   return `${value.toFixed(2)} ETH`
 }
 
+/**
+ * MetricsStrip — horizontal bar showing three protocol-level metrics:
+ * combined TVL across both vaults, total WETH harvested, and deployment block.
+ */
 export default function MetricsStrip() {
   const balanced = useVault(ADDRESSES.balanced.vault as `0x${string}`)
   const aggressive = useVault(ADDRESSES.aggressive.vault as `0x${string}`)
   const { data: harvests, isLoading: harvestsLoading } = useHarvests()
 
-  // TVL combinado de ambos vaults en ETH
+  // Combined TVL across both vaults in ETH
   const isLoadingTvl = balanced.isLoading || aggressive.isLoading
   const tvlRaw = parseFloat(balanced.tvl) + parseFloat(aggressive.tvl)
   const tvlStr = isLoadingTvl ? null : formatEth(tvlRaw)
 
-  // Suma de profit de todos los eventos en los últimos 10,000 bloques
+  // Sum of profit from all harvest events in the lookback window
   const totalProfit = harvests
     ? harvests.reduce((acc, h) => acc + parseFloat(h.profit.replace("+", "")), 0)
     : 0
@@ -48,10 +54,10 @@ export default function MetricsStrip() {
         <span style={subStyle}>Rewards compounded since deploy</span>
       </MetricCell>
 
-      {/* Live Since — estático */}
-      <MetricCell label="Live Since" value="Block 19,847,203">
+      {/* Live Since — static deployment block */}
+      <MetricCell label="Live Since" value={`Block ${DEPLOYMENT_BLOCK.toLocaleString("en-US")}`}>
         <a
-          href="https://etherscan.io/block/19847203"
+          href={`https://etherscan.io/block/${DEPLOYMENT_BLOCK}`}
           target="_blank"
           rel="noopener noreferrer"
           style={{
@@ -80,6 +86,14 @@ const subStyle: React.CSSProperties = {
   color: "var(--muted)",
 };
 
+/**
+ * MetricCell — individual metric display within the MetricsStrip.
+ *
+ * @param label - Uppercase mono label
+ * @param value - Formatted value string, or null while loading (renders Skeleton)
+ * @param borderRight - Whether to render a right border separator
+ * @param children - Subtitle or link rendered below the value
+ */
 function MetricCell({
   label,
   value,

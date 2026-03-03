@@ -7,25 +7,34 @@ export type VaultTag = "balanced" | "aggressive"
 
 export interface HarvestRow {
   vault: VaultTag
-  strategy: string   // address truncada: "0x1234…abcd"
-  profit: string     // WETH formateado con signo: "+0.842"
-  keeper: string     // address truncada: "0x4f2a…c91e"
+  strategy: string   // truncated address: "0x1234…abcd"
+  profit: string     // formatted WETH with sign: "+0.842"
+  keeper: string     // truncated address: "0x4f2a…c91e"
   blockNumber: bigint
-  block: string      // número formateado: "21,847,203"
+  block: string      // formatted block number: "21,847,203"
 }
 
-// Definición del evento como ABI item — viem infiere tipos de log.args
+// Number of blocks to look back when fetching harvest logs (~36 hours at 12s/block)
+const HARVEST_LOOKBACK_BLOCKS = 10_000n
+
+// ABI item for the HarvestExecuted event — viem infers log.args types from this
 const HARVEST_EVENT = parseAbiItem(
   "event HarvestExecuted(address strategy, uint256 profit, address keeper, uint256 keeper_fee)"
 )
 
-// Trunca una address a formato "0x1234…abcd"
+/** Truncates an address to the "0x1234…abcd" display format. */
 function truncateAddress(addr: string): string {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`
 }
 
+/**
+ * useHarvests — fetches the 5 most recent HarvestExecuted events
+ * from both vaults over the last ~36 hours (~10,000 blocks).
+ *
+ * @returns React Query result containing an array of HarvestRow records
+ */
 export function useHarvests() {
-  // Cliente viem desde el contexto de wagmi
+  // viem public client from the wagmi context
   const publicClient = usePublicClient()
 
   return useQuery({
@@ -34,9 +43,9 @@ export function useHarvests() {
       if (!publicClient) return []
 
       const currentBlock = await publicClient.getBlockNumber()
-      const fromBlock = currentBlock - 10_000n
+      const fromBlock = currentBlock - HARVEST_LOOKBACK_BLOCKS
 
-      // Obtener logs de ambos vaults en paralelo
+      // Fetch logs from both vaults in parallel
       const [balancedLogs, aggressiveLogs] = await Promise.all([
         publicClient.getLogs({
           address: ADDRESSES.balanced.vault as `0x${string}`,
@@ -52,7 +61,7 @@ export function useHarvests() {
         }),
       ])
 
-      // Convierte un log a HarvestRow
+      // Maps a raw log to a HarvestRow
       const toRow =
         (vault: VaultTag) =>
         (log: (typeof balancedLogs)[number]): HarvestRow => {
@@ -73,7 +82,7 @@ export function useHarvests() {
           }
         }
 
-      // Combinar, ordenar por bloque descendente y tomar los 5 más recientes
+      // Merge, sort descending by block, keep the 5 most recent
       return [
         ...balancedLogs.map(toRow("balanced")),
         ...aggressiveLogs.map(toRow("aggressive")),

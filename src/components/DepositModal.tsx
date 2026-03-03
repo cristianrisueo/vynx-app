@@ -19,8 +19,9 @@ import { vaultAbi } from "@/abis/vault.abi";
 import { routerAbi } from "@/abis/router.abi";
 import { erc20Abi } from "@/abis/erc20.abi";
 import { quoterAbi } from "@/abis/quoter.abi";
+import { useDebounce } from "@/hooks/useDebounce";
 
-// ── Utilidad: parsear errores de wagmi para mostrar al usuario ───────────────
+// ── Utility: parse wagmi errors into user-facing messages ────────────────────
 function parseError(err: Error): string {
   const msg = err.message ?? "";
   if (
@@ -31,15 +32,9 @@ function parseError(err: Error): string {
   return "Transaction failed. Check console for details.";
 }
 
-// ── Utilidad: debounce genérico ──────────────────────────────────────────────
-function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
-  return debounced;
-}
+// ── Constants ────────────────────────────────────────────────────────────────
+const DEBOUNCE_MS = 500        // delay before firing a Quoter RPC call while typing
+const MODAL_CLOSE_DELAY_MS = 2_000  // pause after success before closing the modal
 
 // ── Props ────────────────────────────────────────────────────────────────────
 interface DepositModalProps {
@@ -50,7 +45,7 @@ interface DepositModalProps {
   vaultName: string;
 }
 
-// ── Estilos compartidos ──────────────────────────────────────────────────────
+// ── Shared styles ────────────────────────────────────────────────────────────
 const labelStyle: React.CSSProperties = {
   fontFamily: "'DM Mono', monospace",
   fontSize: 10,
@@ -70,7 +65,17 @@ const separatorStyle: React.CSSProperties = {
   margin: "20px 0",
 };
 
-// ── Componente principal ─────────────────────────────────────────────────────
+/**
+ * DepositModal — full-screen modal for depositing into an ERC-4626 vault.
+ * Supports ETH (native), WETH (direct deposit), and ERC-20 tokens (via Uniswap V3 swap).
+ * Handles token approval, Quoter price fetching, and the deposit transaction in sequence.
+ *
+ * @param isOpen - Whether the modal is visible
+ * @param onClose - Callback to close the modal
+ * @param vaultAddress - Mainnet address of the ERC-4626 vault
+ * @param routerAddress - Mainnet address of the Router periphery contract
+ * @param vaultName - Display name shown in the modal header
+ */
 export default function DepositModal({
   isOpen,
   onClose,
@@ -84,7 +89,7 @@ export default function DepositModal({
   const publicClient = usePublicClient();
   const queryClient = useQueryClient();
 
-  // Estado del modal
+  // Modal state
   const [selectedToken, setSelectedToken] = useState<TokenConfig>(
     SUPPORTED_TOKENS[0],
   );
@@ -95,16 +100,16 @@ export default function DepositModal({
   const [quoterError, setQuoterError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const debouncedAmount = useDebounce(rawAmount, 500);
+  const debouncedAmount = useDebounce(rawAmount, DEBOUNCE_MS);
 
-  // Indica si el token requiere swap (no es ETH ni WETH)
+  // True for tokens that need a Uniswap V3 swap (not ETH or WETH)
   const needsSwap = selectedToken.poolFee !== null;
 
-  // Spender: vault para WETH directo, router para ERC20
+  // Spender: vault for direct WETH deposits, router for ERC-20 zap
   const spender =
     selectedToken.symbol === "WETH" ? vaultAddress : routerAddress;
 
-  // ── Lectura: balance del token seleccionado ──────────────────────────────
+  // ── Read: selected token balance ─────────────────────────────────────────
   const { data: ethBalanceData } = useBalance({
     address: userAddress,
     query: { enabled: !!userAddress && selectedToken.symbol === "ETH" },
@@ -146,7 +151,7 @@ export default function DepositModal({
 
   const allowance = (allowanceData as bigint | undefined) ?? 0n;
 
-  // Amount parseado a bigint según decimales del token
+  // Amount parsed to bigint using the token's decimals
   const parsedAmount =
     rawAmount && !isNaN(parseFloat(rawAmount)) && parseFloat(rawAmount) > 0
       ? parseUnits(rawAmount, selectedToken.decimals)
@@ -157,7 +162,7 @@ export default function DepositModal({
     parsedAmount > 0n &&
     allowance < parsedAmount;
 
-  // ── Quoter de Uniswap V3: función reutilizable ──────────────────────────
+  // ── Uniswap V3 Quoter: fetch expected WETH output for a swap ─────────────
   // Llama al Quoter V2 y devuelve amountOut (WETH) o null si falla
   const fetchQuote = useCallback(
     async (token: TokenConfig, amountIn: bigint): Promise<bigint | null> => {
@@ -186,7 +191,7 @@ export default function DepositModal({
     [publicClient],
   );
 
-  // Cotización reactiva cuando el usuario edita el amount o cambia de token
+  // Reactive quote: re-runs when the user edits the amount or switches tokens
   useEffect(() => {
     if (!needsSwap || !debouncedAmount || parseFloat(debouncedAmount) <= 0) {
       setQuotedWeth(null);
@@ -210,10 +215,10 @@ export default function DepositModal({
     });
   }, [debouncedAmount, selectedToken, needsSwap, fetchQuote]);
 
-  // Slippage fijo (0.5% — protección estándar contra movimiento de precio)
+  // Fixed slippage (0.5% — standard protection against price movement)
   const effectiveSlippage = 0.5;
 
-  // Min WETH out con slippage aplicado
+  // Min WETH out with slippage applied
   const minWethOut =
     quotedWeth && effectiveSlippage > 0
       ? (quotedWeth *
@@ -221,13 +226,13 @@ export default function DepositModal({
         10_000n
       : 0n;
 
-  // Shares estimadas que recibirá el usuario (para el resumen)
+  // Estimated shares the user will receive (shown in the summary)
   const estimatedShares =
     selectedToken.symbol === "ETH" || selectedToken.symbol === "WETH"
       ? parsedAmount
       : (quotedWeth ?? 0n);
 
-  // ── Escritura: depósito principal ───────────────────────────────────────
+  // ── Write: main deposit transaction ─────────────────────────────────────
   const {
     writeContract,
     data: txHash,
@@ -242,7 +247,7 @@ export default function DepositModal({
     error: receiptError,
   } = useWaitForTransactionReceipt({ hash: txHash });
 
-  // ── Escritura: aprobación ERC20 (par independiente) ──────────────────────
+  // ── Write: ERC-20 approval (independent pair) ────────────────────────────
   const {
     writeContract: writeApprove,
     data: approveTxHash,
@@ -306,7 +311,7 @@ export default function DepositModal({
     }
   }, [isOpen, resetWrite, resetApprove]);
 
-  // Bloquear scroll del body mientras el modal está abierto
+  // Lock body scroll while the modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -326,7 +331,7 @@ export default function DepositModal({
     return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
 
-  // Aprobación confirmada → re-cotizar y disparar depósito
+  // Approval confirmed — re-quote and trigger the deposit
   useEffect(() => {
     if (!isApproveSuccess || !userAddress) return;
 
@@ -341,7 +346,7 @@ export default function DepositModal({
       return;
     }
 
-    // ERC20 con swap — obtener cotización fresca del Quoter antes de depositar
+    // ERC-20 with swap — fetch a fresh quote before submitting the deposit
     const freshDeposit = async () => {
       const freshQuote = await fetchQuote(selectedToken, parsedAmount);
 
@@ -353,7 +358,7 @@ export default function DepositModal({
             10_000n
           : 0n;
 
-      // Actualizar UI con la cotización fresca
+      // Update UI with the fresh quote
       if (freshQuote !== null) setQuotedWeth(freshQuote);
 
       writeContract({
@@ -373,19 +378,19 @@ export default function DepositModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isApproveSuccess]);
 
-  // Invalidar todas las queries tras éxito + cerrar modal
+  // Invalidate all queries on success and schedule modal close
   useEffect(() => {
     if (!isSuccess) return;
 
-    // Refresca todo simultáneamente: TVL, posición, share price, allocations, harvests
+    // Refreshes everything at once: TVL, position, share price, allocations, harvests
     queryClient.invalidateQueries();
 
     // Cerrar modal tras 2 segundos
-    const timer = setTimeout(() => onClose(), 2_000);
+    const timer = setTimeout(() => onClose(), MODAL_CLOSE_DELAY_MS);
     return () => clearTimeout(timer);
   }, [isSuccess, queryClient, onClose]);
 
-  // ── Acción principal ─────────────────────────────────────────────────────
+  // ── Main action handler ──────────────────────────────────────────────────
   const handleAction = useCallback(() => {
     if (!isConnected) {
       const injected = connectors[0];
@@ -464,7 +469,7 @@ export default function DepositModal({
   // Cerrar al hacer click en el overlay
   const handleOverlayClick = useCallback(() => onClose(), [onClose]);
 
-  // ── Label del botón según estado ─────────────────────────────────────────
+  // ── Button label derived from current state ──────────────────────────────
   function getButtonLabel(): string {
     if (!isConnected) return "CONNECT WALLET";
     if (isSuccess) return "DEPOSIT CONFIRMED ✓";
@@ -509,7 +514,7 @@ export default function DepositModal({
         justifyContent: "center",
       }}
     >
-      {/* Panel del modal — padding reducido y scrolleable en móvil */}
+      {/* Modal panel — reduced padding, scrollable on mobile */}
       <div
         className="modal-panel"
         onClick={(e) => e.stopPropagation()}
@@ -652,7 +657,7 @@ export default function DepositModal({
                         (e.currentTarget.style.background = "transparent")
                       }
                     >
-                      {/* Indicador dorado para token seleccionado */}
+                      {/* Gold indicator for selected token */}
                       <span
                         style={{
                           width: 3,
@@ -772,7 +777,7 @@ export default function DepositModal({
 
         <div style={separatorStyle} />
 
-        {/* ── Resumen de la operación ── */}
+        {/* ── Operation summary ── */}
         <div style={{ marginBottom: 20 }}>
           <div
             style={{
@@ -822,7 +827,7 @@ export default function DepositModal({
           )}
         </div>
 
-        {/* ── Botón principal — sticky en móvil para visibilidad con teclado virtual ── */}
+        {/* ── Primary button — sticky on mobile for visibility with virtual keyboard ── */}
         <button
           className="modal-action-btn"
           onClick={handleAction}

@@ -1,4 +1,4 @@
-// ABI mínimo ERC-20 para approve, allowance, balanceOf, decimals, symbol
+// Minimal ERC-20 ABI covering approve, allowance, balanceOf, decimals, and symbol
 export const erc20Abi = [
   {
     name: "approve",

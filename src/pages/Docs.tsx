@@ -4,18 +4,21 @@ import Footer from "@/components/Footer";
 
 // ─── Internal sub-components ──────────────────────────────────────────────────
 
+/** CodeBlock — renders a monospaced preformatted block for code or ABI snippets. */
 const CodeBlock = ({ children }: { children: React.ReactNode }) => (
   <pre className="bg-vynx-surface border border-vynx-border rounded p-4 font-mono text-xs text-vynx-muted overflow-x-auto leading-relaxed whitespace-pre-wrap">
     <code>{children}</code>
   </pre>
 );
 
+/** SectionTag — gold uppercase mono label used as a section eyebrow. */
 const SectionTag = ({ label }: { label: string }) => (
   <span className="font-mono text-[10px] uppercase tracking-[3px] text-vynx-gold">
     {label}
   </span>
 );
 
+/** StatusBadge — green dot + label indicating a contract or feature is active. */
 const StatusBadge = ({ label = "Active" }: { label?: string }) => (
   <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-vynx-green">
     <span className="w-1.5 h-1.5 rounded-full bg-vynx-green inline-block shrink-0" />
@@ -23,6 +26,7 @@ const StatusBadge = ({ label = "Active" }: { label?: string }) => (
   </span>
 );
 
+/** WarningBadge — gold dot + label for notes or caveats within the docs. */
 const WarningBadge = ({ label = "Note" }: { label?: string }) => (
   <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-vynx-gold">
     <span className="w-1.5 h-1.5 rounded-full bg-vynx-gold inline-block shrink-0" />
@@ -45,6 +49,7 @@ const SECTIONS = [
 
 // ─── Address helper ───────────────────────────────────────────────────────────
 
+/** Addr — renders a contract address as a clickable Etherscan link. */
 const Addr = ({ address }: { address: string }) => (
   <a
     href={`https://etherscan.io/address/${address.toLowerCase()}`}
@@ -58,6 +63,7 @@ const Addr = ({ address }: { address: string }) => (
 
 // ─── Heading helper ───────────────────────────────────────────────────────────
 
+/** H2 — section heading in Bebas Neue display font with wide letter spacing. */
 const H2 = ({ children }: { children: React.ReactNode }) => (
   <h2
     style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "3px" }}
@@ -69,6 +75,12 @@ const H2 = ({ children }: { children: React.ReactNode }) => (
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
+/**
+ * Docs — protocol documentation page with a sticky sidebar for section navigation.
+ * Uses IntersectionObserver to highlight the active section in the sidebar as the user scrolls.
+ *
+ * @param setPage - Optional callback to navigate back to the home page via the logo
+ */
 export default function Docs({
   setPage,
 }: {
@@ -97,7 +109,7 @@ export default function Docs({
       <Navbar onLogoClick={setPage ? () => setPage("home") : undefined} />
 
       <main className="flex-grow max-w-7xl mx-auto w-full px-6 md:px-12 py-24 flex flex-col md:flex-row gap-16 relative">
-        {/* Selector de sección — solo visible en móvil, reemplaza al sidebar */}
+        {/* Section selector — mobile only, replaces the sidebar */}
         <select
           className="md:hidden w-full mb-8 bg-vynx-bg border border-vynx-border text-vynx-muted font-mono text-xs uppercase tracking-wider p-3"
           onChange={(e) =>
@@ -111,7 +123,7 @@ export default function Docs({
           ))}
         </select>
 
-        {/* ── Sticky sidebar — oculto en móvil ── */}
+        {/* ── Sticky sidebar — hidden on mobile ── */}
         <aside className="hidden md:block w-56 shrink-0">
           <div className="sticky top-32">
             <ul className="space-y-4 border-l border-vynx-border">
@@ -1076,7 +1088,7 @@ vault.syncIdleBuffer();
                     </span>
                     <StatusBadge label="Implemented" />
                   </div>
-                  {/* Grid de parámetros — 1 columna en móvil, 2 en desktop */}
+                  {/* Parameter grid — 1 column on mobile, 2 on desktop */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-xs">
                     {[
                       { key: "max_tvl", val: "1,000 ETH" },

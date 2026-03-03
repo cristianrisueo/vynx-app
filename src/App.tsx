@@ -5,10 +5,14 @@ import { useRefreshCycle } from './hooks/useRefreshCycle'
 
 type Page = 'home' | 'docs'
 
+/**
+ * App — root component. Manages top-level page routing via useState
+ * and mounts the global 60-second on-chain refresh cycle.
+ */
 function App() {
   const [page, setPage] = useState<Page>('home')
 
-  // Ciclo global de refresco — sincroniza todos los datos on-chain cada 60s
+  // Global refresh cycle — keeps all on-chain data synchronized every 60s
   useRefreshCycle()
 
   if (page === 'docs') return <Docs setPage={setPage} />

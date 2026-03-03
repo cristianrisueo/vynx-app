@@ -1,3 +1,6 @@
+/**
+ * Footer — site-wide footer with logo, attribution, and network indicator.
+ */
 export default function Footer() {
   return (
     <footer

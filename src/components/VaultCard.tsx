@@ -16,6 +16,16 @@ export interface VaultCardProps {
   tier: "balanced" | "aggressive";
 }
 
+/**
+ * VaultCard — displays vault metrics, strategy allocations, and APY for a single
+ * ERC-4626 vault. Provides Deposit and Withdraw action buttons.
+ *
+ * @param name - Display name of the vault tier
+ * @param vaultAddress - Mainnet address of the ERC-4626 vault
+ * @param routerAddress - Mainnet address of the Router periphery contract
+ * @param strategyManagerAddress - Mainnet address of the StrategyManager
+ * @param tier - Risk tier identifier ('balanced' | 'aggressive')
+ */
 export default function VaultCard({
   name,
   vaultAddress,
@@ -27,28 +37,28 @@ export default function VaultCard({
   const { connect } = useConnect();
   const connectors = useConnectors();
 
-  // Datos on-chain del vault (TVL, share price, posición del usuario)
+  // On-chain vault data (TVL, share price, user position)
   const {
     sharePrice,
     userPosition,
     isLoading: vault_loading,
   } = useVault(vaultAddress);
 
-  // Allocations reales desde el StrategyManager
+  // Live allocations from the StrategyManager
   const {
     strategies: strategy_allocations,
     totalAllocated,
     isLoading: alloc_loading,
   } = useStrategyAllocations(strategyManagerAddress);
 
-  // APY ponderado por allocation real
+  // Weighted APY by actual allocation
   const {
     apy,
     isEstimated,
     isLoading: apy_loading,
   } = useVaultAPY(strategyManagerAddress, tier);
 
-  // Estado de los modales
+  // Modal open/close state
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
 
@@ -70,7 +80,7 @@ export default function VaultCard({
     setWithdrawOpen(true);
   }
 
-  // Formatea la posición del usuario: "—" si 0 o cargando
+  // Format the user's position: "—" when zero or still loading
   const user_position_formatted =
     vault_loading || parseFloat(userPosition) === 0
       ? "—"
@@ -80,12 +90,12 @@ export default function VaultCard({
     ? null
     : parseFloat(sharePrice).toFixed(2);
 
-  // Display del APY: skeleton si carga, "~X.X%" si estimado, "X.X%" si real
+  // APY display: skeleton while loading, "~X.X%" if estimated, "X.X%" if live
   const apy_display = apy_loading
     ? null
     : `${isEstimated ? "~" : ""}${apy.toFixed(1)}%`;
 
-  // Vault vacío y no cargando allocations
+  // Vault is empty and allocations are not loading
   const vault_vacio = !alloc_loading && totalAllocated === 0n;
 
   return (
@@ -101,9 +111,9 @@ export default function VaultCard({
           borderBottom: "1px solid var(--border)",
         }}
       >
-        {/* Header: nombre + APY en fila en móvil */}
+        {/* Header: name + APY in a row on mobile */}
         <div className="vault-header" style={{ display: "contents" }}>
-          {/* Nombre del vault */}
+          {/* Vault name */}
           <div
             className="vault-name"
             style={{
@@ -117,7 +127,7 @@ export default function VaultCard({
             {name}
           </div>
 
-          {/* APY — elemento dominante */}
+          {/* APY — dominant element */}
           <div>
             <div
               className="vault-apy-label"
@@ -132,7 +142,7 @@ export default function VaultCard({
             >
               APY
             </div>
-            {/* APY — tamaño reducido en móvil con .vault-apy */}
+            {/* APY — reduced size on mobile via .vault-apy */}
             <div
               className="vault-apy"
               style={{
@@ -163,9 +173,9 @@ export default function VaultCard({
           </div>
         </div>
 
-        {/* Desglose de estrategias — datos reales del StrategyManager */}
+        {/* Strategy breakdown — live data from the StrategyManager */}
         <div className="vault-strategy-section" style={{ minHeight: 120 }}>
-          {/* Vault vacío sin allocations */}
+          {/* Empty vault — no allocations yet */}
           {vault_vacio && (
             <div
               style={{
@@ -179,7 +189,7 @@ export default function VaultCard({
             </div>
           )}
 
-          {/* Barras de estrategia */}
+          {/* Strategy allocation bars */}
           {!vault_vacio &&
             strategy_allocations.map((s, i) => (
               <div key={s.address}>
@@ -218,7 +228,7 @@ export default function VaultCard({
             ))}
         </div>
 
-        {/* Acciones — apiladas en móvil con .vault-actions */}
+        {/* Actions — stacked on mobile via .vault-actions */}
         <div className="vault-actions" style={{ display: "flex", gap: 12 }}>
           <VaultButton deposit onClick={handleDeposit}>
             Deposit
@@ -227,7 +237,7 @@ export default function VaultCard({
         </div>
       </div>
 
-      {/* Modales — hacen createPortal internamente al document.body */}
+      {/* Modals — rendered via createPortal into document.body */}
       <DepositModal
         isOpen={depositOpen}
         onClose={() => setDepositOpen(false)}

@@ -1,5 +1,5 @@
 // ABI del Pool de Aave V3 en Mainnet
-// Dirección: 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2
+// Address: 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2
 // Solo necesitamos getReserveData para leer currentLiquidityRate del wstETH
 export const aavePoolAbi = [
   {

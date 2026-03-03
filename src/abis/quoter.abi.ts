@@ -1,5 +1,5 @@
 // ABI del Quoter V2 de Uniswap V3
-// Dirección: 0x61fFE014bA17989E743c5F6cB21bF9697530B21e
+// Address: 0x61fFE014bA17989E743c5F6cB21bF9697530B21e
 //
 // IMPORTANTE: quoteExactInputSingle es 'nonpayable' (no 'view').
 // Debe llamarse con publicClient.simulateContract(), NO con useReadContract.

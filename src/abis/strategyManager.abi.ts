@@ -1,4 +1,4 @@
-// ABI mínimo del StrategyManager de VynX
+// Minimal ABI for the VynX StrategyManager
 // Solo necesitamos getStrategies() para leer la lista de estrategias activas
 export const strategyManagerAbi = [
   {

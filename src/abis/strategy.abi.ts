@@ -1,4 +1,4 @@
-// ABI mínimo de una estrategia individual de VynX
+// Minimal ABI for an individual VynX strategy
 // Todas las estrategias exponen totalAssets() para reportar el WETH gestionado
 export const strategyAbi = [
   {

@@ -1,8 +1,12 @@
 import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 
-// Ciclo global de refresco — invalida todas las queries cada 60 segundos.
-// Se llama una sola vez en App.tsx para sincronizar todos los datos on-chain.
+/**
+ * useRefreshCycle — mounts a global 60-second interval that invalidates
+ * all React Query caches, keeping on-chain data synchronized across the app.
+ * Called once in App.tsx at the root level.
+ */
+// Global refresh cycle — invalidates all queries every 60 seconds.
 export function useRefreshCycle() {
   const queryClient = useQueryClient()
 

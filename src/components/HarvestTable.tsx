@@ -1,6 +1,11 @@
 import { useHarvests } from "@/hooks/useHarvests"
 import type { VaultTag } from "@/hooks/useHarvests"
 
+/**
+ * VaultBadge — inline label identifying which vault tier a harvest belongs to.
+ *
+ * @param type - Vault tier identifier ('balanced' | 'aggressive')
+ */
 function VaultBadge({ type }: { type: VaultTag }) {
   return (
     <span
@@ -17,12 +22,16 @@ function VaultBadge({ type }: { type: VaultTag }) {
   );
 }
 
+/**
+ * HarvestTable — displays the 5 most recent HarvestExecuted events
+ * from both vaults, pulled from on-chain logs via useHarvests.
+ */
 export default function HarvestTable() {
   const { data: harvests, isLoading, isError } = useHarvests()
 
   return (
     <section className="harvest-section" style={{ padding: "50px 60px 50px" }}>
-      {/* Encabezado de sección */}
+      {/* Section header */}
       <div style={{ marginBottom: 28 }}>
         <div
           style={{
@@ -48,7 +57,7 @@ export default function HarvestTable() {
         </p>
       </div>
 
-      {/* Wrapper con scroll horizontal en móvil */}
+      {/* Horizontal scroll wrapper for mobile */}
       <div className="harvest-table-scroll">
       <table
         style={{

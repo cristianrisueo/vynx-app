@@ -1,4 +1,4 @@
-// Direcciones de contratos deployados en Ethereum Mainnet
+// Contract addresses deployed on Ethereum Mainnet
 export const ADDRESSES = {
   weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
   balanced: {
@@ -13,12 +13,12 @@ export const ADDRESSES = {
   },
 } as const
 
-// Tokens soportados para zap deposit/withdraw
+// Supported tokens for zap deposit/withdraw
 export const SUPPORTED_TOKENS = [
   {
     symbol: "ETH",
     name: "Ethereum",
-    address: null as null, // ETH nativo
+    address: null as null, // native ETH
     decimals: 18,
     poolFee: null as null,
   },
@@ -55,5 +55,5 @@ export const SUPPORTED_TOKENS = [
 export type TokenConfig = (typeof SUPPORTED_TOKENS)[number]
 export type TokenSymbol = TokenConfig["symbol"]
 
-// Quoter V2 de Uniswap V3 en Mainnet
+// Uniswap V3 Quoter V2 on Mainnet
 export const QUOTER_V2_ADDRESS = "0x61fFE014bA17989E743c5F6cB21bF9697530B21e" as const

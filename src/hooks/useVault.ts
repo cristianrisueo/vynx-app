@@ -3,7 +3,7 @@ import { formatUnits, parseUnits } from "viem"
 import type { Address } from "viem"
 import { vaultAbi } from "@/abis/vault.abi"
 
-// 1 WETH en wei — se usa para calcular el share price actual
+// 1 WETH in wei — used as input to convertToAssets for share price calculation
 const ONE_WETH = parseUnits("1", 18)
 
 export interface UseVaultResult {
@@ -14,26 +14,33 @@ export interface UseVaultResult {
   isLoading: boolean
 }
 
+/**
+ * useVault — reads core on-chain data from an ERC-4626 vault in a single multicall.
+ * Refreshes every 60 seconds via the global useRefreshCycle.
+ *
+ * @param vaultAddress - Mainnet address of the ERC-4626 vault
+ * @returns tvl, sharePrice, userShares, userPosition, isLoading
+ */
 export function useVault(vaultAddress: Address): UseVaultResult {
   const { address: userAddress } = useAccount()
 
-  // Batching de lecturas en una sola llamada multicall
+  // Batch all reads into a single multicall
   const { data, isLoading } = useReadContracts({
     contracts: [
-      // [0] TVL del vault en WETH
+      // [0] Vault TVL in WETH
       {
         address: vaultAddress,
         abi: vaultAbi,
         functionName: "totalAssets",
       },
-      // [1] Share price: cuánto WETH vale 1 share (1e18 shares)
+      // [1] Share price: WETH value of 1 share (1e18 shares input)
       {
         address: vaultAddress,
         abi: vaultAbi,
         functionName: "convertToAssets",
         args: [ONE_WETH],
       },
-      // [2] Shares del usuario (solo si hay wallet conectada)
+      // [2] User share balance (only meaningful when wallet is connected)
       {
         address: vaultAddress,
         abi: vaultAbi,
@@ -43,7 +50,7 @@ export function useVault(vaultAddress: Address): UseVaultResult {
     ],
     query: {
       staleTime: 60_000,
-      // Si no hay wallet, igual leemos TVL y sharePrice — solo userShares será 0
+      // Without a wallet we still read TVL and sharePrice — userShares defaults to 0
     },
   })
 
@@ -51,7 +58,7 @@ export function useVault(vaultAddress: Address): UseVaultResult {
   const sharePriceRaw = (data?.[1]?.result ?? ONE_WETH) as bigint
   const userShares = userAddress ? ((data?.[2]?.result ?? 0n) as bigint) : 0n
 
-  // Posición del usuario en WETH: shares * sharePrice / 1e18
+  // User position in WETH: shares × sharePrice / 1e18
   const userPositionWei = (userShares * sharePriceRaw) / ONE_WETH
 
   return {
