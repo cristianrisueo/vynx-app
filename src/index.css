@@ -145,8 +145,6 @@ body::before {
   .hero-left {
     padding: 0 24px;
     width: 100%;
-    text-align: center;
-    align-items: center;
   }
   .hero-left > .fade-up:first-child {
     font-size: 9px;
