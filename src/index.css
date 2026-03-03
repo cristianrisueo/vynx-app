@@ -126,11 +126,12 @@ body::before {
   .hero-cta-group      { flex-direction: row; justify-content: center; gap: 12px; }
   .hero-cta-group > *  { width: auto; }
 
-  /* MetricsStrip */
-  .metrics-strip                  { grid-template-columns: 1fr !important; }
-  .metric-cell                    { width: 100%; padding: 36px 24px !important; border-right: none !important; border-bottom: 1px solid var(--border); }
-  .metric-cell > div:nth-child(2) { font-size: clamp(2rem, 8vw, 3rem) !important; }
-  .metric-cell:last-child         { border-bottom: none; }
+  /* MetricsStrip — 2+1 layout */
+  .metrics-strip                  { grid-template-columns: 1fr 1fr !important; }
+  .metric-cell                    { padding: 28px 24px !important; border-right: none !important; border-bottom: 1px solid var(--border); }
+  .metric-cell:first-child        { border-right: 1px solid var(--border) !important; }
+  .metric-cell:last-child         { grid-column: 1 / -1; border-bottom: none; padding: 20px 24px !important; }
+  .metric-cell > div:nth-child(2) { font-size: clamp(1.5rem, 7vw, 2.5rem) !important; }
 
   /* VaultsGrid */
   .vaults-grid { grid-template-columns: 1fr !important; }
